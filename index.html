@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MaPrecios | Premium Interface</title>
+    <title>MaPrecios | Pro</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
@@ -30,18 +30,13 @@
       window.isAdmin = false;
       const ADMIN_EMAIL = "jorge.valencia.abarca@gmail.com";
 
-      window.onAuth = async (response) => {
+      window.onAuth = (response) => {
           const payload = JSON.parse(atob(response.credential.split('.')[1]));
           window.currentUser = payload;
           window.isAdmin = (payload.email === ADMIN_EMAIL);
           document.getElementById('auth-card').style.display = 'none';
-          document.getElementById('upload-form').classList.remove('hidden');
+          document.getElementById('form-container').classList.remove('hidden');
           renderList(); 
-      };
-
-      window.deleteProduct = async (id) => {
-          if(!window.isAdmin) return;
-          if(confirm("¿Eliminar registro?")) await deleteDoc(doc(db, "productos", id));
       };
 
       onSnapshot(query(collection(db, "negocios")), (snap) => {
@@ -55,223 +50,215 @@
           renderList();
       });
 
-      window.saveProd = async () => {
+      window.saveStore = async () => {
+          const name = document.getElementById('store-name').value;
+          const lat = document.getElementById('store-lat').value;
+          const lng = document.getElementById('store-lng').value;
+          if(!name || !lat) return;
+          await addDoc(collection(db, "negocios"), { name, lat: parseFloat(lat), lng: parseFloat(lng) });
+          document.getElementById('store-name').value = "";
+          document.getElementById('store-popup').classList.add('hidden');
+      };
+
+      window.savePrice = async () => {
           const price = document.getElementById('new-price').value;
           const bizId = document.getElementById('sel-biz').value;
-          if(!price || !window.currentUser) return;
+          const product = document.getElementById('sel-prod').value;
+          if(!price || !bizId) return;
           const b = window.allBusinesses.find(x => x.id === bizId);
           await addDoc(collection(db, "productos"), {
-              bizName: b.name, product: document.getElementById('sel-prod').value,
-              price: price, userEmail: window.currentUser.email,
+              bizName: b.name, product, price, userEmail: window.currentUser.email,
               timestamp: Date.now(), lat: b.lat, lng: b.lng
           });
           document.getElementById('new-price').value = "";
-          alert("Registrado con éxito");
+          alert("✓ Precio actualizado");
+      };
+
+      window.deleteItem = async (col, id) => {
+          if(window.isAdmin && confirm("¿Eliminar registro?")) await deleteDoc(doc(db, col, id));
       };
     </script>
     
     <style>
-        :root { 
-            --accent: #2563eb; 
-            --bg: #fdfdfd; 
-            --panel: rgba(255, 255, 255, 0.85);
-            --shadow: 0 8px 32px rgba(0,0,0,0.08);
+        :root { --main: #0066ff; --bg: #f8fafc; --card: #ffffff; }
+        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: #1e293b; overflow: hidden; }
+        
+        /* Intro Profesional */
+        #intro-screen {
+            position: fixed; inset: 0; background: #fff; z-index: 10000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            animation: fadeExit 0.8s forwards 3s;
         }
-        
-        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: #0f172a; overflow: hidden; }
-        
-        /* HUD Superior */
+        .intro-logo {
+            font-size: 2.5rem; font-weight: 800; color: var(--main);
+            letter-spacing: -1px; opacity: 0; transform: translateY(20px);
+            animation: logoFadeUp 1.2s forwards 0.5s;
+        }
+        .intro-sub {
+            font-size: 0.9rem; color: #94a3b8; font-weight: 600; margin-top: 10px;
+            opacity: 0; animation: fadeIn 1s forwards 1.5s;
+        }
+        @keyframes logoFadeUp { to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { to { opacity: 1; } }
+        @keyframes fadeExit { to { opacity: 0; visibility: hidden; } }
+
+        /* Interfaz */
         header { 
-            position: fixed; top: 0; width: 100%; z-index: 2000;
-            padding: 15px 20px; box-sizing: border-box;
-            background: var(--panel); backdrop-filter: blur(10px);
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
+            position: fixed; top: 0; width: 100%; height: 65px; background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(12px); border-bottom: 1px solid #e2e8f0;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 1000; box-sizing: border-box;
         }
-        .logo { font-weight: 800; font-size: 1.1rem; letter-spacing: -0.5px; color: var(--accent); }
+        .logo-small { font-weight: 800; font-size: 1.2rem; color: var(--main); }
 
-        /* Contenedor Principal */
-        .content { height: 100vh; width: 100%; padding-top: 65px; box-sizing: border-box; }
-        
-        /* Estilo Lista de Productos */
-        .scroll-area { height: calc(100vh - 145px); overflow-y: auto; padding: 15px; }
-        .product-card { 
-            background: #fff; padding: 16px; border-radius: 16px; 
-            margin-bottom: 12px; border: 1px solid #f1f5f9; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        .container { height: 100vh; padding: 65px 0 85px 0; box-sizing: border-box; }
+        .view { height: 100%; overflow-y: auto; padding: 20px; }
+
+        .card { 
+            background: var(--card); border-radius: 16px; padding: 18px; margin-bottom: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #f1f5f9;
             display: flex; justify-content: space-between; align-items: center;
         }
-        .price { font-weight: 800; font-size: 1.2rem; color: #10b981; }
+        .price-tag { font-weight: 700; color: #10b981; font-size: 1.1rem; }
 
-        /* Mapa y Botones Flotantes */
-        #tab-map { position: relative; height: 100%; width: 100%; }
-        #main-map { width: 100%; height: 100%; z-index: 1; }
+        #map { width: 100%; height: 100%; }
         
-        .map-controls {
-            position: absolute; bottom: 100px; right: 20px; z-index: 1000;
-            display: flex; flex-direction: column; gap: 10px;
-        }
-        .floating-btn {
-            width: 50px; height: 50px; border-radius: 15px; background: #fff;
-            border: none; box-shadow: var(--shadow); cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .floating-btn svg { width: 22px; height: 22px; fill: #475569; }
+        /* Marcadores Pro */
+        .dot-store { background: var(--main); border: 3px solid #fff; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .dot-user { background: #10b981; border: 3px solid #fff; border-radius: 50%; box-shadow: 0 0 15px rgba(16,185,129,0.4); }
+        
+        .btn-me { position: absolute; bottom: 100px; right: 20px; z-index: 500; background: #fff; border: none; width: 48px; height: 48px; border-radius: 12px; box-shadow: 0 8px 15px rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-        /* Navegación */
-        nav { 
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            width: calc(100% - 40px); max-width: 400px; height: 65px;
-            background: #0f172a; border-radius: 20px; z-index: 2000;
-            display: flex; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; color: #94a3b8; cursor: pointer; transition: 0.2s; }
-        .nav-item.active { color: #fff; }
-        .nav-item svg { width: 20px; height: 20px; margin-bottom: 2px; fill: currentColor; }
-        .nav-label { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        #store-popup { position: absolute; bottom: 100px; left: 20px; right: 20px; background: #fff; padding: 22px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 1000; }
 
-        /* Formularios */
-        input, select { 
-            width: 100%; padding: 14px; border: 1px solid #e2e8f0; border-radius: 12px; 
-            background: #f8fafc; margin-bottom: 10px; font-family: inherit; font-size: 1rem;
-        }
-        .btn-submit { 
-            background: var(--accent); color: #fff; border: none; padding: 16px; 
-            border-radius: 12px; width: 100%; font-weight: 700; cursor: pointer; 
-        }
+        nav { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 400px; height: 68px; background: #fff; border-radius: 24px; box-shadow: 0 12px 24px rgba(0,0,0,0.06); display: flex; z-index: 1000; border: 1px solid #f1f5f9; }
+        .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #94a3b8; cursor: pointer; }
+        .nav-btn.active { color: var(--main); }
 
+        input, select { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; font-size: 14px; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--main); background: #fff; box-shadow: 0 0 0 3px rgba(0,102,255,0.1); }
+        .btn-submit { background: var(--main); color: #fff; border: none; padding: 16px; width: 100%; border-radius: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        .admin-del { color: #f43f5e; font-size: 10px; font-weight: 700; margin-top: 6px; display: block; text-decoration: none; cursor: pointer; }
         .hidden { display: none !important; }
-        .admin-del { color: #ef4444; font-size: 0.65rem; font-weight: 800; cursor: pointer; margin-top: 5px; border: none; background: none; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
+<div id="intro-screen">
+    <div class="intro-logo">MaPrecios</div>
+    <div class="intro-sub">INTELIGENCIA COLABORATIVA</div>
+</div>
+
 <header>
-    <div class="logo">MAPRECIOS</div>
-    <div style="font-size: 0.6rem; font-weight: 700; color: #64748b;">V 2.0 PREMIUM</div>
+    <div class="logo-small">MaPrecios</div>
+    <div style="font-size: 10px; font-weight: 600; color: #64748b;">PRO SYSTEM</div>
 </header>
 
-<div class="content">
-    <div id="tab-list" class="scroll-area">
-        <input type="text" id="search" placeholder="Buscar producto..." onkeyup="renderList()">
-        <div id="product-list"></div>
+<div class="container">
+    <div id="tab-list" class="view">
+        <input type="text" id="search" placeholder="Filtrar por nombre..." onkeyup="renderList()">
+        <div id="items"></div>
     </div>
 
-    <div id="tab-map" class="hidden">
-        <div id="main-map"></div>
-        <div class="map-controls">
-            <button class="floating-btn" onclick="centerMap()">
-                <svg viewBox="0 0 24 24"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
-            </button>
+    <div id="tab-map" class="hidden" style="height:100%; position:relative;">
+        <div id="map"></div>
+        <button class="btn-me" onclick="toMe()">📍</button>
+        <div id="store-popup" class="hidden">
+            <h4 style="margin:0 0 12px 0;">Registrar Nuevo Local</h4>
+            <input type="text" id="store-name" placeholder="Nombre de la tienda">
+            <input type="hidden" id="store-lat"><input type="hidden" id="store-lng">
+            <button class="btn-submit" onclick="saveStore()">Guardar Local</button>
         </div>
     </div>
 
-    <div id="tab-add" class="hidden scroll-area">
-        <div id="auth-card" style="text-align: center; padding: 30px 10px;">
-            <p style="font-weight: 600; margin-bottom: 20px;">Accede para colaborar</p>
+    <div id="tab-add" class="hidden view">
+        <div id="auth-card" style="text-align: center; padding: 40px 20px;">
+            <h3>Bienvenido</h3>
+            <p style="color: #64748b; margin-bottom: 25px;">Inicia sesión para compartir precios.</p>
             <div id="g_id_onload" data-client_id="741318611947-h590d5p7s9njemslu7th8g38v09i210a.apps.googleusercontent.com" data-callback="onAuth"></div>
-            <div class="g_id_signin" data-type="standard" data-shape="pill"></div>
+            <div class="g_id_signin" data-type="standard"></div>
         </div>
-        <div id="upload-form" class="hidden">
-            <h2 style="font-size: 1.2rem; margin-bottom: 20px;">Subir Precio Nuevo</h2>
-            <select id="sel-biz"></select>
-            <select id="sel-prod"></select>
-            <input type="number" id="new-price" placeholder="Precio ($)">
-            <button class="btn-submit" onclick="saveProd()">PUBLICAR</button>
+        <div id="form-container" class="hidden">
+            <div style="background: #fff; padding: 24px; border-radius: 20px; border: 1px solid #f1f5f9;">
+                <h4 style="margin-top:0;">Actualizar Precio</h4>
+                <label style="font-size: 11px; font-weight: 700; color: #94a3b8;">SELECCIONAR LOCAL</label>
+                <select id="sel-biz"></select>
+                <label style="font-size: 11px; font-weight: 700; color: #94a3b8;">PRODUCTO</label>
+                <select id="sel-prod"></select>
+                <label style="font-size: 11px; font-weight: 700; color: #94a3b8;">PRECIO UNITARIO ($)</label>
+                <input type="number" id="new-price" placeholder="00.00">
+                <button class="btn-submit" onclick="savePrice()">Publicar Precio</button>
+            </div>
         </div>
     </div>
 </div>
 
 <nav>
-    <div class="nav-item active" onclick="nav('list', this)">
-        <svg viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
-        <div class="nav-label">Lista</div>
-    </div>
-    <div class="nav-item" onclick="nav('map', this)">
-        <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-        <div class="nav-label">Radar</div>
-    </div>
-    <div class="nav-item" onclick="nav('add', this)">
-        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-        <div class="nav-label">Aportar</div>
-    </div>
+    <div class="nav-btn active" onclick="nav('list', this)">LISTA</div>
+    <div class="nav-btn" onclick="nav('map', this)">MAPA</div>
+    <div class="nav-btn" onclick="nav('add', this)">APORTAR</div>
 </nav>
 
 <script>
-    let userPos = null;
-    let watchID = null;
-    let mainMap = L.map('main-map', { zoomControl: false }).setView([-33.45, -70.66], 13);
+    const prods = ["Arroz 1kg", "Aceite 900ml", "Leche 1L", "Fideos 400g", "Azúcar 1kg", "Papel Higiénico 4u", "Papas Fritas 180g", "Bebida 2.5L", "Café 170g", "Detergente 3L"];
     
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(mainMap);
+    let userP = null;
+    let map = L.map('map', { zoomControl: false }).setView([-33.45, -70.66], 13);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
 
-    function nav(tab, btn) {
-        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    const sIcon = L.divIcon({ className: 'dot-store', iconSize: [18, 18] });
+    const uIcon = L.divIcon({ className: 'dot-user', iconSize: [12, 12] });
+
+    navigator.geolocation.watchPosition(p => {
+        userP = [p.coords.latitude, p.coords.longitude];
+        if(window.uMk) window.uMk.setLatLng(userP);
+        else window.uMk = L.marker(userP, {icon: uIcon}).addTo(map);
+    }, null, { enableHighAccuracy: true });
+
+    map.on('click', (e) => {
+        if(!window.currentUser) return alert("Inicia sesión para agregar locales");
+        document.getElementById('store-popup').classList.remove('hidden');
+        document.getElementById('store-lat').value = e.latlng.lat;
+        document.getElementById('store-lng').value = e.latlng.lng;
+    });
+
+    function toMe() { if(userP) map.flyTo(userP, 16); }
+
+    function nav(v, btn) {
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        ['tab-list','tab-map','tab-add'].forEach(id => document.getElementById(id).classList.add('hidden'));
-        document.getElementById('tab-'+tab).classList.remove('hidden');
-        if(tab === 'map') setTimeout(() => mainMap.invalidateSize(), 100);
-    }
-
-    // GPS DE ALTA PRECISIÓN CON SEGUIMIENTO PASIVO
-    function startTracking() {
-        if ("geolocation" in navigator) {
-            watchID = navigator.geolocation.watchPosition(pos => {
-                userPos = [pos.coords.latitude, pos.coords.longitude];
-                updateUserMarker();
-            }, err => console.error(err), { enableHighAccuracy: true });
-        }
-    }
-
-    function updateUserMarker() {
-        if(!userPos) return;
-        if(window.uMarker) {
-            window.uMarker.setLatLng(userPos);
-        } else {
-            window.uMarker = L.circleMarker(userPos, {
-                radius: 7, color: '#fff', weight: 2, fillColor: '#2563eb', fillOpacity: 1
-            }).addTo(mainMap);
-        }
-    }
-
-    function centerMap() {
-        if(userPos) {
-            mainMap.flyTo(userPos, 16, { animate: true, duration: 1.5 });
-        } else {
-            alert("Localizando señal GPS...");
-        }
-    }
-
-    window.renderList = () => {
-        const query = document.getElementById('search').value.toLowerCase();
-        let html = "";
-        window.allProducts?.filter(p => p.product.toLowerCase().includes(query)).forEach(p => {
-            html += `
-            <div class="product-card">
-                <div>
-                    <div style="font-weight:700;">${p.product}</div>
-                    <div style="font-size:0.75rem; color:#64748b;">Local: ${p.bizName}</div>
-                    ${window.isAdmin ? `<button class="admin-del" onclick="deleteProduct('${p.id}')">Borrar Registro</button>` : ''}
-                </div>
-                <div class="price">$${Number(p.price).toLocaleString('es-CL')}</div>
-            </div>`;
-        });
-        document.getElementById('product-list').innerHTML = html || "<p style='text-align:center; padding-top:20px; font-size:0.8rem;'>No hay datos disponibles</p>";
-    }
-
-    window.renderMarkers = () => {
-        window.allBusinesses?.forEach(b => {
-            L.circleMarker([b.lat, b.lng], { radius: 6, color: '#0f172a', weight: 2, fillColor: '#fff', fillOpacity: 1 })
-            .addTo(mainMap).bindPopup(`<b>${b.name}</b>`);
-        });
+        ['tab-list','tab-map','tab-add'].forEach(i => document.getElementById(i).classList.add('hidden'));
+        document.getElementById('tab-'+v).classList.remove('hidden');
+        if(v === 'map') setTimeout(() => map.invalidateSize(), 150);
     }
 
     window.updateSelectors = () => {
         document.getElementById('sel-biz').innerHTML = window.allBusinesses?.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
-        document.getElementById('sel-prod').innerHTML = ["Pan 1kg", "Leche 1L", "Aceite 900ml", "Arroz 1kg", "Azúcar 1kg", "Huevos 12u"].map(p => `<option value="${p}">${p}</option>`).join('');
+        document.getElementById('sel-prod').innerHTML = prods.map(p => `<option value="${p}">${p}</option>`).join('');
     };
 
-    // Iniciar rastreo al cargar
-    startTracking();
-</script>
+    window.renderList = () => {
+        const q = document.getElementById('search').value.toLowerCase();
+        let h = "";
+        window.allProducts?.filter(p => p.product.toLowerCase().includes(q)).forEach(p => {
+            h += `<div class="card">
+                <div>
+                    <div style="font-weight:700; font-size:15px;">${p.product}</div>
+                    <div style="font-size:12px; color:#64748b;">${p.bizName}</div>
+                    ${window.isAdmin ? `<span class="admin-del" onclick="deleteItem('productos','${p.id}')">BORRAR REGISTRO</span>` : ''}
+                </div>
+                <div class="price-tag">$${p.price}</div>
+            </div>`;
+        });
+        document.getElementById('items').innerHTML = h;
+    };
 
+    window.renderMarkers = () => {
+        map.eachLayer(l => { if(l instanceof L.Marker && l !== window.uMk) map.removeLayer(l); });
+        window.allBusinesses?.forEach(b => {
+            const p = `<div style="padding:5px;"><b>${b.name}</b>${window.isAdmin ? `<br><span class="admin-del" onclick="deleteItem('negocios','${b.id}')">BORRAR LOCAL</span>` : ''}</div>`;
+            L.marker([b.lat, b.lng], {icon: sIcon}).addTo(map).bindPopup(p);
+        });
+    };
+</script>
 </body>
 </html>
