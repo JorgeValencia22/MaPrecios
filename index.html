@@ -3,732 +3,358 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MaPrecios | Business Visionary Pro</title>
-
-    <meta name="description" content="La plataforma líder en comparación de precios en tiempo real de Kest.">
-    <meta name="theme-color" content="#0066ff">
-
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/framer-motion/10.16.4/framer-motion.umd.min.js"></script>
+    <title>MaPrecios Business Pro | Kest Ecosystem</title>
     
-    <script src="https://www.paypal.com/sdk/js?client-id=BAAZ0X-3IhGgySgHkjA0ItlcqSu3fMmrTkQFmhcuPHWALq8CxO_jqGpa-4VTKlN1lQyp6c0eVNvCC7Novk&components=hosted-buttons&disable-funding=venmo&currency=USD"></script>
-
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
     <style>
         :root {
             --primary: #0066ff;
-            --primary-dark: #0052cc;
-            --secondary: #6366f1;
+            --dark: #0f172a;
             --accent: #f59e0b;
             --success: #10b981;
-            --danger: #ef4444;
-            --background: #f8fafc;
-            --card-bg: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --radius-lg: 24px;
-            --radius-md: 16px;
-            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-            --premium-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+            --bg: #f8fafc;
+            --glass: rgba(255, 255, 255, 0.9);
         }
 
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+        /* Reset Profesional */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg); color: var(--dark); overflow: hidden; height: 100vh; }
+
+        /* Splash Screen Visionario */
+        #kest-loader {
+            position: fixed; inset: 0; background: #fff; z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.6s ease;
+        }
+        .k-box {
+            width: 80px; height: 80px; background: var(--primary); border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 40px; font-weight: 800; animation: bounce 1s infinite;
         }
 
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--background);
-            color: var(--text-main);
-            overflow: hidden;
-            height: 100vh;
-        }
-
-        /* --- SPLASH SCREEN --- */
-        #splash {
-            position: fixed;
-            inset: 0;
-            background: #fff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .kest-logo {
-            width: 120px;
-            height: 120px;
-            background: var(--primary);
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 40px;
-            font-weight: 800;
-            box-shadow: 0 20px 40px rgba(0,102,255,0.3);
-            animation: pulse 2s infinite ease-in-out;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        /* --- HEADER & NAVIGATION --- */
+        /* Layout Principal */
         header {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            height: 70px;
-            background: rgba(255,255,255,0.8);
-            backdrop-filter: blur(12px);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 24px;
-            z-index: 1000;
-            border-bottom: 1px solid var(--border);
+            position: fixed; top: 0; width: 100%; height: 70px;
+            background: var(--glass); backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; z-index: 1000; border-bottom: 1px solid #e2e8f0;
         }
 
-        .brand-name {
-            font-size: 20px;
-            font-weight: 800;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+        .view-container { height: 100vh; padding-top: 70px; padding-bottom: 80px; overflow-y: auto; }
+        .view { padding: 20px; animation: fadeIn 0.4s ease; max-width: 600px; margin: 0 auto; }
 
-        .user-chip {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: var(--background);
-            padding: 6px 12px;
-            border-radius: 100px;
-            border: 1px solid var(--border);
-        }
-
-        .user-chip img {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-        }
-
-        /* --- MAIN VIEWPORT --- */
-        .viewport {
-            height: 100vh;
-            padding-top: 70px;
-            padding-bottom: 85px;
-            overflow-y: auto;
-            scroll-behavior: smooth;
-        }
-
-        .view {
-            padding: 20px;
-            max-width: 600px;
-            margin: 0 auto;
-            animation: slideIn 0.4s ease-out;
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* --- CARDS & COMPONENTS --- */
+        /* Componentes Business */
         .card {
-            background: var(--card-bg);
-            border-radius: var(--radius-md);
-            padding: 20px;
-            margin-bottom: 16px;
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
+            background: #fff; border-radius: 24px; padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03); margin-bottom: 20px;
+            border: 1px solid #f1f5f9;
         }
 
-        .premium-badge {
-            background: var(--premium-gradient);
-            color: white;
-            font-size: 10px;
-            font-weight: 800;
-            padding: 4px 10px;
-            border-radius: 100px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .premium-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: #fff; border: none; position: relative; overflow: hidden;
         }
 
-        /* --- INPUTS & BUTTONS --- */
-        .input-group {
-            margin-bottom: 20px;
+        .premium-card::after {
+            content: '⭐'; position: absolute; right: -10px; top: -10px;
+            font-size: 80px; opacity: 0.1;
         }
 
-        label {
-            display: block;
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-            padding-left: 4px;
+        /* Botones de Acción */
+        .btn-kest {
+            background: var(--primary); color: white; border: none;
+            width: 100%; padding: 16px; border-radius: 16px;
+            font-weight: 700; font-size: 16px; cursor: pointer;
+            transition: 0.3s; margin-top: 10px;
         }
+        .btn-kest:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,102,255,0.2); }
 
-        input, select {
-            width: 100%;
-            padding: 16px;
-            border-radius: 14px;
-            border: 1.5px solid var(--border);
-            background: #fff;
-            font-size: 15px;
-            transition: all 0.3s;
-            outline: none;
+        /* Inputs Modernos */
+        .input-k {
+            width: 100%; padding: 14px; border-radius: 12px;
+            border: 1.5px solid #e2e8f0; margin: 10px 0; outline: none; transition: 0.3s;
         }
+        .input-k:focus { border-color: var(--primary); background: #fff; }
 
-        input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.1);
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 18px;
-            border-radius: 14px;
-            font-weight: 700;
-            font-size: 16px;
-            cursor: pointer;
-            transition: transform 0.2s, background 0.2s;
-            box-shadow: 0 10px 20px -5px rgba(0,102,255,0.4);
-        }
-
-        .btn-primary:active { transform: scale(0.98); }
-
-        /* --- MAP OVERLAY --- */
-        #map {
-            width: 100%;
-            height: calc(100vh - 155px);
-            border-radius: var(--radius-lg);
-            border: 4px solid white;
-            box-shadow: var(--shadow);
-        }
-
-        .map-control {
-            position: absolute;
-            bottom: 30px;
-            right: 30px;
-            z-index: 1000;
-            background: white;
-            padding: 15px;
-            border-radius: 50%;
-            box-shadow: var(--shadow);
-        }
-
-        /* --- SEARCH & LIST --- */
-        .search-container {
-            position: sticky;
-            top: 0;
-            background: var(--background);
-            z-index: 10;
-            padding: 10px 0;
-        }
-
-        .product-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: white;
-            padding: 18px;
-            border-radius: 20px;
-            margin-bottom: 12px;
-            border-left: 4px solid transparent;
-            transition: all 0.2s;
-        }
-
-        .product-item.is-premium {
-            border-left-color: var(--accent);
-            background: linear-gradient(to right, #fff9eb, #ffffff);
-        }
-
-        .price-tag {
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--success);
-        }
-
-        /* --- TAB BAR --- */
+        /* Navegación Inferior */
         nav {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            height: 85px;
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 0 10px 15px 10px;
-            border-top: 1px solid var(--border);
-            z-index: 1000;
+            position: fixed; bottom: 0; width: 100%; height: 80px;
+            background: var(--glass); backdrop-filter: blur(10px);
+            display: flex; justify-content: space-around; align-items: center;
+            border-top: 1px solid #e2e8f0; z-index: 1000;
         }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            color: #94a3b8; cursor: pointer; transition: 0.3s; font-size: 10px; font-weight: 700;
+        }
+        .nav-item.active { color: var(--primary); }
+        .nav-icon { width: 24px; height: 24px; margin-bottom: 4px; }
 
-        .nav-link {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 11px;
-            font-weight: 700;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
+        /* Mapa */
+        #map { width: 100%; height: 400px; border-radius: 24px; border: 4px solid #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
 
-        .nav-link svg {
-            width: 24px;
-            height: 24px;
-            transition: all 0.3s;
-        }
-
-        .nav-link.active {
-            color: var(--primary);
-        }
-
-        .nav-link.active svg {
-            transform: translateY(-3px);
-            filter: drop-shadow(0 4px 8px rgba(0,102,255,0.3));
-        }
-
-        /* --- NOTIFICATIONS --- */
-        #notification-center {
-            position: fixed;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 400px;
-            z-index: 5000;
-        }
-
-        .toast {
-            background: white;
-            padding: 16px;
-            border-radius: 18px;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
-            border: 2px solid var(--primary);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        }
-
-        @keyframes bounceIn {
-            0% { opacity: 0; transform: translateY(-50px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
+        /* Animaciones */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
         .hidden { display: none !important; }
-
-        /* --- POPUPS --- */
-        .overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 2000;
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-        }
-
-        .popup-sheet {
-            background: white;
-            width: 100%;
-            max-width: 500px;
-            padding: 30px;
-            border-radius: 30px 30px 0 0;
-            animation: sheetUp 0.3s ease-out;
-        }
-
-        @keyframes sheetUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
     </style>
 </head>
 <body>
 
-<div id="splash">
-    <div class="kest-logo">K</div>
-    <h2 style="margin-top:20px; font-weight: 800; letter-spacing: -1px;">MAPRECIOS</h2>
-    <p style="color: var(--text-muted); font-size: 14px;">Powered by Kest Business</p>
-</div>
-
-<header>
-    <div class="brand-name">MAPRECIOS PRO</div>
-    <div id="auth-status">
-        <div id="g_id_onload" 
-             data-client_id="741318611947-h590d5p7s9njemslu7th8g38v09i210a.apps.googleusercontent.com" 
-             data-callback="onAuth">
-        </div>
-        <div class="g_id_signin" data-type="icon" data-shape="circle"></div>
+    <div id="kest-loader">
+        <div class="k-box">K</div>
+        <h2 style="margin-top:20px; font-weight: 800;">MaPrecios Pro</h2>
     </div>
-    <div id="user-profile" class="hidden">
-        <div class="user-chip">
-            <span id="user-name" style="font-size:12px; font-weight:700;">Jorge</span>
-            <img id="user-img" src="" alt="Avatar">
+
+    <header>
+        <div style="font-weight: 800; font-size: 18px; letter-spacing: -0.5px;">KEST <span style="color: var(--primary);">BUSINESS</span></div>
+        <div id="user-pill" class="hidden" style="background: #f1f5f9; padding: 5px 12px; border-radius: 100px; font-size: 12px; font-weight: 700;">
+            <span id="user-display">Invitado</span>
         </div>
-    </div>
-</header>
+    </header>
 
-<div id="notification-center"></div>
-
-<main class="viewport">
-    
-    <section id="v-list" class="view">
-        <div class="search-container">
-            <input type="text" id="main-search" placeholder="¿Qué buscas hoy, Jorge?" onkeyup="renderGlobalList()">
+    <div class="view-container">
+        <div id="v-list" class="view">
+            <div class="card" style="padding: 15px;">
+                <input type="text" id="search-input" class="input-k" placeholder="Buscar productos en la red..." onkeyup="searchProducts()">
+            </div>
+            <div id="products-render"></div>
         </div>
-        <div id="list-container">
-            </div>
-    </section>
 
-    <section id="v-map" class="view hidden">
-        <div id="map"></div>
-        <p style="text-align:center; font-size:12px; color:var(--text-muted); margin-top:10px;">
-            Toca el mapa para registrar una nueva tienda en la red Kest.
-        </p>
-    </section>
-
-    <section id="v-add" class="view hidden">
-        <div class="card">
-            <h3 style="margin-top:0">Actualizar Stock</h3>
-            <div class="input-group">
-                <label>Seleccionar Negocio</label>
-                <select id="sel-biz-post"></select>
-            </div>
-            <div class="input-group">
-                <label>Producto</label>
-                <select id="sel-prod-post">
-                    <option>Arroz Premium 1kg</option>
-                    <option>Aceite Vegetal 900ml</option>
-                    <option>Leche Entera 1L</option>
-                    <option>Pan de Molde 500g</option>
-                    <option>Bebida Cola 2.5L</option>
-                    <option>Huevos (Docena)</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label>Precio Actual ($)</label>
-                <input type="number" id="price-input" placeholder="0.00">
-            </div>
-            <button class="btn-primary" onclick="submitPriceUpdate()">Publicar Cambio</button>
+        <div id="v-map" class="view hidden">
+            <div id="map"></div>
+            <p style="text-align:center; font-size:12px; color:#64748b; margin-top:15px;">Toca el mapa para registrar un nuevo punto de venta.</p>
         </div>
-    </section>
 
-    <section id="v-promo" class="view hidden">
-        <div class="card" style="border: 2px solid var(--accent); background: linear-gradient(180deg, #fff, #fff9eb);">
-            <div class="premium-badge">Membresía Business</div>
-            <h2 style="margin: 15px 0 10px 0;">Dominio de Mercado</h2>
-            <p style="color: var(--text-muted); font-size: 14px; line-height: 1.6;">
-                Activa el modo **Premium** para que tu negocio sea el primero que vean los clientes al acercarse a 2km a la redonda.
-            </p>
-            
-            <div class="input-group" style="margin-top:25px;">
-                <label>Tu tienda registrada</label>
-                <select id="sel-promo-biz" onchange="refreshPayPal()"></select>
+        <div id="v-add" class="view hidden">
+            <div id="auth-zone" class="card" style="text-align: center;">
+                <h3>Acceso de Colaborador</h3>
+                <p style="font-size: 14px; color: #64748b; margin: 15px 0;">Identifícate para actualizar precios y ganar reputación en Kest.</p>
+                <div id="google-btn-container" style="display: flex; justify-content: center;"></div>
             </div>
 
-            <div id="paypal-button-container" style="margin-top:20px;"></div>
-            
-            <ul style="padding-left:20px; font-size:13px; color:var(--text-muted); text-align:left;">
-                <li>Marcador dorado en el mapa global.</li>
-                <li>Notificaciones push a usuarios cercanos.</li>
-                <li>Análisis de precios de la competencia.</li>
-            </ul>
-        </div>
-    </section>
-</main>
-
-<nav>
-    <div class="nav-link active" onclick="navigate('list', this)">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
-        <span>LISTA</span>
-    </div>
-    <div class="nav-link" onclick="navigate('map', this)">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-        <span>MAPA</span>
-    </div>
-    <div class="nav-link" onclick="navigate('add', this)">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-        <span>APORTAR</span>
-    </div>
-    <div class="nav-link" onclick="navigate('promo', this)">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--accent)"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
-        <span>IMPULSAR</span>
-    </div>
-</nav>
-
-<div id="store-sheet" class="overlay hidden">
-    <div class="popup-sheet">
-        <h3 style="margin-top:0">Nueva Tienda Kest</h3>
-        <p style="font-size:14px; color:var(--text-muted);">Completa la información para que los clientes te encuentren.</p>
-        <div class="input-group">
-            <label>Nombre del Establecimiento</label>
-            <input type="text" id="reg-biz-name" placeholder="Ej: Supermercado El Éxito">
-        </div>
-        <input type="hidden" id="temp-lat">
-        <input type="hidden" id="temp-lng">
-        <div style="display:flex; gap:10px;">
-            <button class="btn-primary" style="background:#64748b;" onclick="closeSheet()">Cancelar</button>
-            <button class="btn-primary" onclick="registerStore()">Registrar</button>
-        </div>
-    </div>
-</div>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    // CORE CONFIGURATION
-    const firebaseConfig = {
-        apiKey: "AIzaSyAzNx7ARReSFqDt052rIficuErmuq10WMc",
-        authDomain: "studio-2946557679-4235d.firebaseapp.com",
-        projectId: "studio-2946557679-4235d",
-        storageBucket: "studio-2946557679-4235d.firebasestorage.app",
-        messagingSenderId: "1014571657099",
-        appId: "1:1014571657099:web:f1bb8b8619c2474c95718e"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const ADMIN_EMAIL = "jorge.valencia.abarca@gmail.com";
-
-    // STATE MANAGEMENT
-    window.user = null;
-    window.isAdmin = false;
-    window.data = { businesses: [], products: [] };
-    window.myLocation = null;
-
-    // INITIALIZATION
-    window.addEventListener('load', () => {
-        setTimeout(() => {
-            document.getElementById('splash').style.opacity = '0';
-            setTimeout(() => document.getElementById('splash').remove(), 800);
-        }, 2000);
-        initMap();
-    });
-
-    // AUTHENTICATION
-    window.onAuth = async (response) => {
-        const payload = JSON.parse(atob(response.credential.split('.')[1]));
-        window.user = payload;
-        window.isAdmin = (payload.email === ADMIN_EMAIL);
-
-        document.getElementById('auth-status').classList.add('hidden');
-        document.getElementById('user-profile').classList.remove('hidden');
-        document.getElementById('user-img').src = payload.picture;
-        document.getElementById('user-name').innerText = payload.given_name;
-
-        pushNotification(`¡Bienvenido, ${payload.given_name}! Visionario de Kest.`);
-        syncData();
-    };
-
-    // REAL-TIME SYNC
-    function syncData() {
-        onSnapshot(collection(db, "negocios"), (snap) => {
-            window.data.businesses = snap.docs.map(d => ({id: d.id, ...d.data()}));
-            updateDropdowns();
-            renderMarkers();
-        });
-
-        onSnapshot(query(collection(db, "productos"), orderBy("timestamp", "desc")), (snap) => {
-            window.data.products = snap.docs.map(d => ({id: d.id, ...d.data()}));
-            renderGlobalList();
-        });
-    }
-
-    // MAP ENGINE
-    let map;
-    function initMap() {
-        map = L.map('map', { zoomControl: false }).setView([-33.45, -70.66], 13);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '© Kest Ecosystem'
-        }).addTo(map);
-
-        navigator.geolocation.watchPosition(p => {
-            const loc = [p.coords.latitude, p.coords.longitude];
-            window.myLocation = loc;
-            L.circleMarker(loc, { radius: 8, color: '#0066ff', fillColor: '#0066ff', fillOpacity: 1 }).addTo(map);
-            checkProximity(loc);
-        });
-
-        map.on('click', (e) => {
-            if(!window.user) return pushNotification("Inicia sesión para registrar tiendas");
-            document.getElementById('temp-lat').value = e.latlng.lat;
-            document.getElementById('temp-lng').value = e.latlng.lng;
-            document.getElementById('store-sheet').classList.remove('hidden');
-        });
-    }
-
-    // BUSINESS LOGIC: Store Registration
-    window.registerStore = async () => {
-        const name = document.getElementById('reg-biz-name').value;
-        if(!name) return;
-
-        try {
-            await addDoc(collection(db, "negocios"), {
-                name,
-                lat: parseFloat(document.getElementById('temp-lat').value),
-                lng: parseFloat(document.getElementById('temp-lng').value),
-                creator: window.user.email,
-                premium: false,
-                timestamp: Date.now()
-            });
-            pushNotification("¡Negocio registrado con éxito!");
-            closeSheet();
-        } catch (e) {
-            console.error(e);
-        }
-    };
-
-    // BUSINESS LOGIC: Price Updates
-    window.submitPriceUpdate = async () => {
-        const bizId = document.getElementById('sel-biz-post').value;
-        const productName = document.getElementById('sel-prod-post').value;
-        const price = document.getElementById('price-input').value;
-
-        if(!bizId || !price) return pushNotification("Completa todos los campos");
-
-        const biz = window.data.businesses.find(b => b.id === bizId);
-
-        await addDoc(collection(db, "productos"), {
-            bizId,
-            bizName: biz.name,
-            product: productName,
-            price: parseFloat(price),
-            timestamp: Date.now(),
-            user: window.user.email,
-            isPremiumBiz: biz.premium || false
-        });
-
-        pushNotification("Precio actualizado. La red Kest te lo agradece.");
-        document.getElementById('price-input').value = "";
-    };
-
-    // UI RENDERING
-    window.renderGlobalList = () => {
-        const queryStr = document.getElementById('main-search').value.toLowerCase();
-        const container = document.getElementById('list-container');
-        
-        let html = "";
-        const filtered = window.data.products.filter(p => 
-            p.product.toLowerCase().includes(queryStr) || p.bizName.toLowerCase().includes(queryStr)
-        );
-
-        filtered.forEach(p => {
-            html += `
-                <div class="product-item ${p.isPremiumBiz ? 'is-premium' : ''}">
-                    <div>
-                        <div style="font-weight:800; color:var(--text-main)">${p.product}</div>
-                        <div style="font-size:12px; color:var(--text-muted)">${p.bizName} ${p.isPremiumBiz ? '⭐' : ''}</div>
-                    </div>
-                    <div class="price-tag">$${p.price.toLocaleString()}</div>
+            <div id="post-zone" class="hidden">
+                <div class="card">
+                    <h4 style="margin-bottom:15px;">Registrar Precio</h4>
+                    <select id="sel-biz" class="input-k"></select>
+                    <select id="sel-prod" class="input-k">
+                        <option>Arroz 1kg</option>
+                        <option>Aceite 900ml</option>
+                        <option>Leche 1L</option>
+                        <option>Bebida 2.5L</option>
+                        <option>Pan de Molde</option>
+                    </select>
+                    <input type="number" id="price-val" class="input-k" placeholder="Precio ($)">
+                    <button class="btn-kest" onclick="publishPrice()">Publicar Ahora</button>
                 </div>
-            `;
-        });
-        container.innerHTML = html || "<p style='text-align:center; color:var(--text-muted);'>No hay productos que coincidan.</p>";
-    };
+            </div>
+        </div>
 
-    window.renderMarkers = () => {
-        map.eachLayer(l => { if(l instanceof L.Marker) map.removeLayer(l); });
-        window.data.businesses.forEach(b => {
-            const icon = L.divIcon({
-                className: 'custom-marker',
-                html: `<div style="background:${b.premium ? 'var(--accent)' : 'var(--primary)'}; width:15px; height:15px; border-radius:50%; border:2px solid white; box-shadow:0 0 10px rgba(0,0,0,0.3)"></div>`
+        <div id="v-promo" class="view hidden">
+            <div class="card premium-card">
+                <h2>Impulso Premium</h2>
+                <p style="font-size: 14px; margin: 10px 0 20px 0;">Haz que tu tienda sea la primera en aparecer cuando los clientes busquen ofertas.</p>
+                <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                    <ul style="font-size: 13px; list-style: none;">
+                        <li>✅ Notificaciones a usuarios a 2km</li>
+                        <li>✅ Distintivo dorado "Verificado"</li>
+                        <li>✅ Prioridad en resultados</li>
+                    </ul>
+                </div>
+                <select id="sel-promo-biz" class="input-k" style="background: #fff;"></select>
+                <div id="paypal-container" style="margin-top: 15px;"></div>
+                <button id="load-payment" class="btn-kest" style="background: var(--accent);" onclick="initPayments()">Activar Pasarela de Pago</button>
+            </div>
+        </div>
+    </div>
+
+    <nav>
+        <div class="nav-item active" onclick="go('list', this)">
+            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-width="2" stroke-linecap="round"/></svg>
+            LISTA
+        </div>
+        <div class="nav-item" onclick="go('map', this)">
+            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17.6 16.6L13.4 20.9a2 2 0 01-2.8 0l-4.2-4.2a8 8 0 1111.3 0z" stroke-width="2" stroke-linecap="round"/></svg>
+            MAPA
+        </div>
+        <div class="nav-item" onclick="go('add', this)">
+            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-width="2" stroke-linecap="round"/></svg>
+            APORTAR
+        </div>
+        <div class="nav-item" onclick="go('promo', this)">
+            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--accent)"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-width="2" stroke-linecap="round"/></svg>
+            PROMO
+        </div>
+    </nav>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Configuración Firebase (Privada de MaPrecios)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAzNx7ARReSFqDt052rIficuErmuq10WMc",
+            authDomain: "studio-2946557679-4235d.firebaseapp.com",
+            projectId: "studio-2946557679-4235d",
+            storageBucket: "studio-2946557679-4235d.firebasestorage.app",
+            messagingSenderId: "1014571657099",
+            appId: "1:1014571657099:web:f1bb8b8619c2474c95718e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Estado Global
+        window.user = null;
+        window.db = db;
+        window.allBiz = [];
+
+        // Inicialización
+        window.onload = () => {
+            setTimeout(() => { document.getElementById('kest-loader').style.opacity = '0'; 
+            setTimeout(() => document.getElementById('kest-loader').classList.add('hidden'), 600); }, 1500);
+            initGoogleAuth();
+            syncData();
+        };
+
+        // Google Auth - Versión Segura
+        function initGoogleAuth() {
+            google.accounts.id.initialize({
+                client_id: "741318611947-h590d5p7s9njemslu7th8g38v09i210a.apps.googleusercontent.com",
+                callback: handleAuth
             });
-            L.marker([b.lat, b.lng], { icon }).addTo(map).bindPopup(`<b>${b.name}</b><br>${b.premium ? '⭐ Tienda Destacada' : 'Tienda Regular'}`);
-        });
-    };
+            google.accounts.id.renderButton(
+                document.getElementById("google-btn-container"),
+                { theme: "outline", size: "large", shape: "pill" }
+            );
+        }
 
-    // PREMIUM SYSTEM & PAYPAL
-    window.refreshPayPal = () => {
-        const bizId = document.getElementById('sel-promo-biz').value;
-        const container = document.getElementById('paypal-button-container');
-        container.innerHTML = "";
+        async function handleAuth(response) {
+            const payload = JSON.parse(atob(response.credential.split('.')[1]));
+            window.user = payload;
+            
+            document.getElementById('auth-zone').classList.add('hidden');
+            document.getElementById('post-zone').classList.remove('hidden');
+            document.getElementById('user-pill').classList.remove('hidden');
+            document.getElementById('user-display').innerText = payload.given_name;
+            updateSelectors();
+        }
 
-        if(!bizId) return;
+        // Sincronización Real-Time
+        function syncData() {
+            onSnapshot(collection(db, "negocios"), (snap) => {
+                window.allBiz = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                updateSelectors();
+                renderMarkers();
+            });
 
-        paypal.HostedButtons({
-            hostedButtonId: "4FUHMFXVCPNL8",
-            onApprove: async (data, actions) => {
-                await updateDoc(doc(db, "negocios", bizId), { 
-                    premium: true, 
-                    premiumUntil: Date.now() + (30*24*60*60*1000) 
-                });
-                pushNotification("¡PAGO EXITOSO! Tu negocio ahora domina el área.");
-                location.reload();
-            }
-        }).render("#paypal-button-container");
-    };
+            onSnapshot(query(collection(db, "productos"), orderBy("timestamp", "desc")), (snap) => {
+                const prods = snap.docs.map(d => d.data());
+                renderProducts(prods);
+            });
+        }
 
-    // PROXIMITY ENGINE (Income driver: alerts nearby users)
-    function checkProximity(loc) {
-        window.data.businesses.forEach(b => {
-            if(b.premium) {
-                const distance = map.distance(loc, [b.lat, b.lng]);
-                if(distance < 2000) { // 2 Kilometers
-                    if(!sessionStorage.getItem(`ad_${b.id}`)) {
-                        pushNotification(`¡OFERTA CERCA! ${b.name} tiene precios especiales para ti.`);
-                        sessionStorage.setItem(`ad_${b.id}`, "true");
+        // Navegación SPA
+        window.go = (v, btn) => {
+            document.querySelectorAll('.view').forEach(x => x.classList.add('hidden'));
+            document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+            document.getElementById('v-'+v).classList.remove('hidden');
+            btn.classList.add('active');
+            if(v === 'map') setTimeout(() => map.invalidateSize(), 200);
+        };
+
+        // Lógica de Pagos (Evita bloqueos de seguridad)
+        window.initPayments = () => {
+            const bizId = document.getElementById('sel-promo-biz').value;
+            if(!bizId) return alert("Selecciona un negocio de tu propiedad.");
+
+            const script = document.createElement('script');
+            script.src = "https://www.paypal.com/sdk/js?client-id=BAAZ0X-3IhGgySgHkjA0ItlcqSu3fMmrTkQFmhcuPHWALq8CxO_jqGpa-4VTKlN1lQyp6c0eVNvCC7Novk&components=hosted-buttons&disable-funding=venmo&currency=USD";
+            script.onload = () => {
+                document.getElementById('load-payment').classList.add('hidden');
+                paypal.HostedButtons({
+                    hostedButtonId: "4FUHMFXVCPNL8",
+                    onApprove: async (data, actions) => {
+                        await updateDoc(doc(db, "negocios", bizId), { 
+                            premium: true, 
+                            premiumUntil: Date.now() + (30*24*60*60*1000) 
+                        });
+                        alert("¡Visibilidad Premium Activada!");
+                        location.reload();
                     }
-                }
+                }).render("#paypal-container");
+            };
+            document.head.appendChild(script);
+        };
+
+        // Helpers de UI
+        function updateSelectors() {
+            const options = window.allBiz.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+            document.getElementById('sel-biz').innerHTML = options;
+            
+            const myBiz = window.allBiz.filter(b => b.creator === window.user?.email);
+            document.getElementById('sel-promo-biz').innerHTML = myBiz.map(b => `<option value="${b.id}">${b.name}</option>`).join('') || '<option disabled>No tienes tiendas registradas</option>';
+        }
+
+        window.publishPrice = async () => {
+            const bizId = document.getElementById('sel-biz').value;
+            const price = document.getElementById('price-val').value;
+            const product = document.getElementById('sel-prod').value;
+            
+            if(!price) return;
+
+            const biz = window.allBiz.find(b => b.id === bizId);
+            await addDoc(collection(db, "productos"), {
+                bizId, bizName: biz.name, product, price: parseFloat(price),
+                timestamp: Date.now(), user: window.user.email, isPremium: biz.premium || false
+            });
+            alert("Precio actualizado en la red Kest.");
+            document.getElementById('price-val').value = "";
+        };
+
+        function renderProducts(prods) {
+            const container = document.getElementById('products-render');
+            container.innerHTML = prods.map(p => `
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center; border-left: 5px solid ${p.isPremium ? 'var(--accent)' : 'var(--primary)'}">
+                    <div>
+                        <div style="font-weight:800;">${p.product}</div>
+                        <div style="font-size:12px; color:#64748b;">${p.bizName} ${p.isPremium ? '⭐' : ''}</div>
+                    </div>
+                    <div style="font-size:20px; font-weight:800; color:var(--success);">$${p.price}</div>
+                </div>
+            `).join('');
+        }
+    </script>
+
+    <script>
+        // Mapa e Interacciones
+        let map = L.map('map', { zoomControl: false }).setView([-33.45, -70.66], 13);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
+
+        map.on('click', async (e) => {
+            if(!window.user) return alert("Inicia sesión para registrar una tienda.");
+            const name = prompt("Nombre de la nueva tienda:");
+            if(name) {
+                await addDoc(collection(window.db, "negocios"), {
+                    name, lat: e.latlng.lat, lng: e.latlng.lng,
+                    creator: window.user.email, premium: false
+                });
             }
         });
-    }
 
-    // UTILS
-    window.navigate = (viewId, element) => {
-        document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
-        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-        document.getElementById(`v-${viewId}`).classList.remove('hidden');
-        element.classList.add('active');
-        if(viewId === 'map') setTimeout(() => map.invalidateSize(), 200);
-    };
-
-    function updateDropdowns() {
-        const allBizOpts = window.data.businesses.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
-        const myBizOpts = window.data.businesses
-            .filter(b => b.creator === window.user?.email)
-            .map(b => `<option value="${b.id}">${b.name}</option>`).join('');
-        
-        document.getElementById('sel-biz-post').innerHTML = allBizOpts;
-        document.getElementById('sel-promo-biz').innerHTML = myBizOpts || `<option disabled>No tienes tiendas registradas</option>`;
-    }
-
-    function pushNotification(msg) {
-        const center = document.getElementById('notification-center');
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.innerHTML = `
-            <div style="background:var(--primary); color:white; width:30px; height:30px; border-radius:10px; display:flex; align-items:center; justify-content:center;">!</div>
-            <div style="font-size:13px; font-weight:600;">${msg}</div>
-        `;
-        center.appendChild(toast);
-        setTimeout(() => toast.remove(), 4000);
-    }
-
-    window.closeSheet = () => document.getElementById('store-sheet').classList.add('hidden');
-
-</script>
+        function renderMarkers() {
+            window.allBiz?.forEach(b => {
+                L.marker([b.lat, b.lng]).addTo(map).bindPopup(`<b>${b.name}</b>`);
+            });
+        }
+    </script>
 </body>
 </html>
