@@ -3,266 +3,732 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MaPrecios | Business Pro</title>
-    
+    <title>MaPrecios | Business Visionary Pro</title>
+
+    <meta name="description" content="La plataforma líder en comparación de precios en tiempo real de Kest.">
+    <meta name="theme-color" content="#0066ff">
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/framer-motion/10.16.4/framer-motion.umd.min.js"></script>
     
     <script src="https://www.paypal.com/sdk/js?client-id=BAAZ0X-3IhGgySgHkjA0ItlcqSu3fMmrTkQFmhcuPHWALq8CxO_jqGpa-4VTKlN1lQyp6c0eVNvCC7Novk&components=hosted-buttons&disable-funding=venmo&currency=USD"></script>
 
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-      import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <style>
+        :root {
+            --primary: #0066ff;
+            --primary-dark: #0052cc;
+            --secondary: #6366f1;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --background: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            --premium-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        }
 
-      const firebaseConfig = {
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--background);
+            color: var(--text-main);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* --- SPLASH SCREEN --- */
+        #splash {
+            position: fixed;
+            inset: 0;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .kest-logo {
+            width: 120px;
+            height: 120px;
+            background: var(--primary);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 40px;
+            font-weight: 800;
+            box-shadow: 0 20px 40px rgba(0,102,255,0.3);
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* --- HEADER & NAVIGATION --- */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 70px;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand-name {
+            font-size: 20px;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--background);
+            padding: 6px 12px;
+            border-radius: 100px;
+            border: 1px solid var(--border);
+        }
+
+        .user-chip img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+        }
+
+        /* --- MAIN VIEWPORT --- */
+        .viewport {
+            height: 100vh;
+            padding-top: 70px;
+            padding-bottom: 85px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        .view {
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- CARDS & COMPONENTS --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        .premium-badge {
+            background: var(--premium-gradient);
+            color: white;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 100px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* --- INPUTS & BUTTONS --- */
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            padding-left: 4px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            border: 1.5px solid var(--border);
+            background: #fff;
+            font-size: 15px;
+            transition: all 0.3s;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.1);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 18px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            box-shadow: 0 10px 20px -5px rgba(0,102,255,0.4);
+        }
+
+        .btn-primary:active { transform: scale(0.98); }
+
+        /* --- MAP OVERLAY --- */
+        #map {
+            width: 100%;
+            height: calc(100vh - 155px);
+            border-radius: var(--radius-lg);
+            border: 4px solid white;
+            box-shadow: var(--shadow);
+        }
+
+        .map-control {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 50%;
+            box-shadow: var(--shadow);
+        }
+
+        /* --- SEARCH & LIST --- */
+        .search-container {
+            position: sticky;
+            top: 0;
+            background: var(--background);
+            z-index: 10;
+            padding: 10px 0;
+        }
+
+        .product-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            padding: 18px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+            border-left: 4px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .product-item.is-premium {
+            border-left-color: var(--accent);
+            background: linear-gradient(to right, #fff9eb, #ffffff);
+        }
+
+        .price-tag {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--success);
+        }
+
+        /* --- TAB BAR --- */
+        nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 85px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 10px 15px 10px;
+            border-top: 1px solid var(--border);
+            z-index: 1000;
+        }
+
+        .nav-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 700;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-link svg {
+            width: 24px;
+            height: 24px;
+            transition: all 0.3s;
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+        }
+
+        .nav-link.active svg {
+            transform: translateY(-3px);
+            filter: drop-shadow(0 4px 8px rgba(0,102,255,0.3));
+        }
+
+        /* --- NOTIFICATIONS --- */
+        #notification-center {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 400px;
+            z-index: 5000;
+        }
+
+        .toast {
+            background: white;
+            padding: 16px;
+            border-radius: 18px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            border: 2px solid var(--primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: translateY(-50px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .hidden { display: none !important; }
+
+        /* --- POPUPS --- */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .popup-sheet {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+            border-radius: 30px 30px 0 0;
+            animation: sheetUp 0.3s ease-out;
+        }
+
+        @keyframes sheetUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div id="splash">
+    <div class="kest-logo">K</div>
+    <h2 style="margin-top:20px; font-weight: 800; letter-spacing: -1px;">MAPRECIOS</h2>
+    <p style="color: var(--text-muted); font-size: 14px;">Powered by Kest Business</p>
+</div>
+
+<header>
+    <div class="brand-name">MAPRECIOS PRO</div>
+    <div id="auth-status">
+        <div id="g_id_onload" 
+             data-client_id="741318611947-h590d5p7s9njemslu7th8g38v09i210a.apps.googleusercontent.com" 
+             data-callback="onAuth">
+        </div>
+        <div class="g_id_signin" data-type="icon" data-shape="circle"></div>
+    </div>
+    <div id="user-profile" class="hidden">
+        <div class="user-chip">
+            <span id="user-name" style="font-size:12px; font-weight:700;">Jorge</span>
+            <img id="user-img" src="" alt="Avatar">
+        </div>
+    </div>
+</header>
+
+<div id="notification-center"></div>
+
+<main class="viewport">
+    
+    <section id="v-list" class="view">
+        <div class="search-container">
+            <input type="text" id="main-search" placeholder="¿Qué buscas hoy, Jorge?" onkeyup="renderGlobalList()">
+        </div>
+        <div id="list-container">
+            </div>
+    </section>
+
+    <section id="v-map" class="view hidden">
+        <div id="map"></div>
+        <p style="text-align:center; font-size:12px; color:var(--text-muted); margin-top:10px;">
+            Toca el mapa para registrar una nueva tienda en la red Kest.
+        </p>
+    </section>
+
+    <section id="v-add" class="view hidden">
+        <div class="card">
+            <h3 style="margin-top:0">Actualizar Stock</h3>
+            <div class="input-group">
+                <label>Seleccionar Negocio</label>
+                <select id="sel-biz-post"></select>
+            </div>
+            <div class="input-group">
+                <label>Producto</label>
+                <select id="sel-prod-post">
+                    <option>Arroz Premium 1kg</option>
+                    <option>Aceite Vegetal 900ml</option>
+                    <option>Leche Entera 1L</option>
+                    <option>Pan de Molde 500g</option>
+                    <option>Bebida Cola 2.5L</option>
+                    <option>Huevos (Docena)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Precio Actual ($)</label>
+                <input type="number" id="price-input" placeholder="0.00">
+            </div>
+            <button class="btn-primary" onclick="submitPriceUpdate()">Publicar Cambio</button>
+        </div>
+    </section>
+
+    <section id="v-promo" class="view hidden">
+        <div class="card" style="border: 2px solid var(--accent); background: linear-gradient(180deg, #fff, #fff9eb);">
+            <div class="premium-badge">Membresía Business</div>
+            <h2 style="margin: 15px 0 10px 0;">Dominio de Mercado</h2>
+            <p style="color: var(--text-muted); font-size: 14px; line-height: 1.6;">
+                Activa el modo **Premium** para que tu negocio sea el primero que vean los clientes al acercarse a 2km a la redonda.
+            </p>
+            
+            <div class="input-group" style="margin-top:25px;">
+                <label>Tu tienda registrada</label>
+                <select id="sel-promo-biz" onchange="refreshPayPal()"></select>
+            </div>
+
+            <div id="paypal-button-container" style="margin-top:20px;"></div>
+            
+            <ul style="padding-left:20px; font-size:13px; color:var(--text-muted); text-align:left;">
+                <li>Marcador dorado en el mapa global.</li>
+                <li>Notificaciones push a usuarios cercanos.</li>
+                <li>Análisis de precios de la competencia.</li>
+            </ul>
+        </div>
+    </section>
+</main>
+
+<nav>
+    <div class="nav-link active" onclick="navigate('list', this)">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
+        <span>LISTA</span>
+    </div>
+    <div class="nav-link" onclick="navigate('map', this)">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+        <span>MAPA</span>
+    </div>
+    <div class="nav-link" onclick="navigate('add', this)">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span>APORTAR</span>
+    </div>
+    <div class="nav-link" onclick="navigate('promo', this)">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--accent)"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+        <span>IMPULSAR</span>
+    </div>
+</nav>
+
+<div id="store-sheet" class="overlay hidden">
+    <div class="popup-sheet">
+        <h3 style="margin-top:0">Nueva Tienda Kest</h3>
+        <p style="font-size:14px; color:var(--text-muted);">Completa la información para que los clientes te encuentren.</p>
+        <div class="input-group">
+            <label>Nombre del Establecimiento</label>
+            <input type="text" id="reg-biz-name" placeholder="Ej: Supermercado El Éxito">
+        </div>
+        <input type="hidden" id="temp-lat">
+        <input type="hidden" id="temp-lng">
+        <div style="display:flex; gap:10px;">
+            <button class="btn-primary" style="background:#64748b;" onclick="closeSheet()">Cancelar</button>
+            <button class="btn-primary" onclick="registerStore()">Registrar</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // CORE CONFIGURATION
+    const firebaseConfig = {
         apiKey: "AIzaSyAzNx7ARReSFqDt052rIficuErmuq10WMc",
         authDomain: "studio-2946557679-4235d.firebaseapp.com",
         projectId: "studio-2946557679-4235d",
         storageBucket: "studio-2946557679-4235d.firebasestorage.app",
         messagingSenderId: "1014571657099",
         appId: "1:1014571657099:web:f1bb8b8619c2474c95718e"
-      };
+    };
 
-      const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
-      const ADMIN_EMAIL = "jorge.valencia.abarca@gmail.com";
-      
-      window.currentUser = null;
-      window.isAdmin = false;
-      window.myPos = null;
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const ADMIN_EMAIL = "jorge.valencia.abarca@gmail.com";
 
-      window.onAuth = async (response) => {
-          const payload = JSON.parse(atob(response.credential.split('.')[1]));
-          const banSnap = await getDoc(doc(db, "blacklist", payload.email));
-          if(banSnap.exists() && banSnap.data().until > Date.now()){
-              alert("Cuenta suspendida."); return;
-          }
-          window.currentUser = payload;
-          window.isAdmin = (payload.email === ADMIN_EMAIL);
-          document.getElementById('auth-ui').classList.add('hidden');
-          document.getElementById('post-ui').classList.remove('hidden');
-          document.getElementById('promo-auth').classList.add('hidden');
-          document.getElementById('promo-ui').classList.remove('hidden');
-          if(window.isAdmin) document.getElementById('nav-admin').classList.remove('hidden');
-          updateSelectors();
-      };
+    // STATE MANAGEMENT
+    window.user = null;
+    window.isAdmin = false;
+    window.data = { businesses: [], products: [] };
+    window.myLocation = null;
 
-      onSnapshot(collection(db, "negocios"), (snap) => { 
-          window.allBusinesses = snap.docs.map(d => ({id: d.id, ...d.data()})); 
-          updateSelectors(); 
-          renderMarkers();
-          checkPremiumProximity();
-      });
-
-      onSnapshot(query(collection(db, "productos"), orderBy("timestamp", "desc")), (snap) => { 
-          window.allProducts = snap.docs.map(d => ({id: d.id, ...d.data()})); 
-          renderList(); 
-      });
-
-      // Lógica de Pago y Activación Premium
-      window.initPayPal = () => {
-          const bizId = document.getElementById('sel-promo-biz').value;
-          if(!bizId) return alert("Selecciona un negocio primero");
-
-          document.getElementById('paypal-container-4FUHMFXVCPNL8').innerHTML = "";
-          paypal.HostedButtons({
-            hostedButtonId: "4FUHMFXVCPNL8",
-            onApprove: async (data, actions) => {
-                await updateDoc(doc(db, "negocios", bizId), { premium: true, promoUntil: Date.now() + (30*24*60*60*1000) });
-                alert("¡Pago exitoso! Tu negocio ahora es Premium por 30 días.");
-                location.reload();
-            }
-          }).render("#paypal-container-4FUHMFXVCPNL8");
-      };
-
-      // Verificar cercanía a negocios Premium (Anuncios dinámicos)
-      function checkPremiumProximity() {
-          if(!window.myPos || !window.allBusinesses) return;
-          window.allBusinesses.forEach(b => {
-              if(b.premium && b.promoUntil > Date.now()){
-                  const dist = map.distance(window.myPos, [b.lat, b.lng]);
-                  if(dist < 2000) { // 2 Kilómetros
-                      showLocalAd(b);
-                  }
-              }
-          });
-      }
-
-      function showLocalAd(biz) {
-          const ad = document.getElementById('premium-ad');
-          if(ad.dataset.last === biz.id) return; // No repetir seguido
-          ad.innerHTML = `
-            <div class="ad-box">
-                <small>TIENDA CERCANA DESTACADA</small>
-                <h3>${biz.name}</h3>
-                <p>¡Visítanos! Estamos a pocos minutos de tu ubicación.</p>
-                <button class="btn" onclick="this.parentElement.parentElement.classList.add('hidden')">Ver en Mapa</button>
-            </div>`;
-          ad.dataset.last = biz.id;
-          ad.classList.remove('hidden');
-      }
-
-      window.saveStore = async () => {
-          const name = document.getElementById('store-name').value;
-          const lat = document.getElementById('store-lat').value;
-          const lng = document.getElementById('store-lng').value;
-          await addDoc(collection(db, "negocios"), { 
-              name, lat: parseFloat(lat), lng: parseFloat(lng), 
-              creator: window.currentUser.email, premium: false 
-          });
-          document.getElementById('store-popup').classList.add('hidden');
-      };
-
-      window.go = (v, btn) => {
-          document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-          btn.classList.add('active');
-          document.querySelectorAll('.view').forEach(i => i.classList.add('hidden'));
-          document.getElementById('v-'+v).classList.remove('hidden');
-          if(v === 'map') setTimeout(() => map.invalidateSize(), 100);
-          if(v === 'promo' && window.currentUser) updateSelectors();
-      };
-
-      window.updateSelectors = () => {
-          const myBiz = window.allBusinesses?.filter(b => b.creator === window.currentUser?.email) || [];
-          const opt = myBiz.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
-          const allOpt = window.allBusinesses?.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
-          
-          if(document.getElementById('sel-promo-biz')) document.getElementById('sel-promo-biz').innerHTML = opt;
-          if(document.getElementById('sel-biz')) document.getElementById('sel-biz').innerHTML = allOpt;
-          if(document.getElementById('sel-prod')) document.getElementById('sel-prod').innerHTML = ["Arroz 1kg", "Aceite 900ml", "Leche 1L", "Pan 500g", "Bebida 2.5L"].map(p => `<option value="${p}">${p}</option>`).join('');
-      };
-    </script>
-
-    <style>
-        :root { --main: #0066ff; --bg: #f8fafc; }
-        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); overflow: hidden; }
-        
-        #intro { position: fixed; inset: 0; background: #fff; z-index: 10000; display: flex; align-items: center; justify-content: center; animation: fadeOut 0.8s forwards 2.5s; }
-        .logo-txt { font-size: 2.5rem; font-weight: 800; color: var(--main); }
-        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
-
-        header { position: fixed; top: 0; width: 100%; height: 60px; background: #fff; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 1000; }
-        .wrapper { height: 100vh; padding: 60px 0 80px 0; }
-        .view { height: 100%; overflow-y: auto; padding: 20px; }
-
-        /* Anuncio Premium */
-        #premium-ad { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; z-index: 2000; }
-        .ad-box { background: #fff; padding: 20px; border-radius: 20px; border: 2px solid var(--main); box-shadow: 0 10px 30px rgba(0,102,255,0.2); text-align: center; }
-        .ad-box small { color: var(--main); font-weight: 800; font-size: 10px; }
-
-        /* PayPal Section */
-        .promo-card { background: #fff; padding: 25px; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); text-align: center; }
-
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #fff; border-top: 1px solid #e2e8f0; display: flex; height: 75px; }
-        .nav-item { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #94a3b8; cursor: pointer; }
-        .nav-item.active { color: var(--main); }
-
-        .btn { background: var(--main); color: #fff; border: none; padding: 14px; width: 100%; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 10px; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 10px; }
-        .hidden { display: none !important; }
-        #map { width: 100%; height: 100%; border-radius: 20px; }
-    </style>
-</head>
-<body>
-
-<div id="intro"><div class="logo-txt">MaPrecios</div></div>
-<div id="premium-ad" class="hidden"></div>
-
-<header>
-    <div style="font-weight: 800; color: var(--main);">MAPRECIOS</div>
-    <div style="font-size: 10px; color: #64748b;">BUSINESS EDITION</div>
-</header>
-
-<div class="wrapper">
-    <div id="v-list" class="view">
-        <input type="text" id="find" placeholder="Buscar productos..." onkeyup="renderList()">
-        <div id="product-list"></div>
-    </div>
-
-    <div id="v-map" class="view hidden" style="position:relative;">
-        <div id="map"></div>
-        <div id="store-popup" class="hidden" style="position:absolute; top:20px; left:50%; transform:translateX(-50%); background:#fff; width:90%; padding:20px; border-radius:20px; z-index:1001;">
-            <input type="text" id="store-name" placeholder="Nombre de la tienda">
-            <input type="hidden" id="store-lat"><input type="hidden" id="store-lng">
-            <button class="btn" onclick="saveStore()">Registrar Tienda</button>
-        </div>
-    </div>
-
-    <div id="v-promo" class="view hidden">
-        <div id="promo-auth" style="text-align:center; padding: 40px 0;">
-            <h3>Impulsa tu Negocio</h3>
-            <p>Inicia sesión para destacar tu tienda ante miles de usuarios cercanos.</p>
-        </div>
-        <div id="promo-ui" class="hidden">
-            <div class="promo-card">
-                <h4 style="margin-top:0">Publicidad Premium</h4>
-                <p style="font-size:13px; color:#64748b;">Tu negocio aparecerá como anuncio a todos los usuarios que pasen a menos de 2km por 30 días.</p>
-                <label style="font-size:11px; font-weight:700;">1. SELECCIONA TU TIENDA</label>
-                <select id="sel-promo-biz" onchange="initPayPal()"></select>
-                <div id="paypal-container-4FUHMFXVCPNL8" style="margin-top:20px;"></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="v-add" class="view hidden">
-        <div id="auth-ui" style="text-align:center; padding: 40px 0;">
-            <div id="g_id_onload" data-client_id="741318611947-h590d5p7s9njemslu7th8g38v09i210a.apps.googleusercontent.com" data-callback="onAuth"></div>
-            <div class="g_id_signin" data-type="standard"></div>
-        </div>
-        <div id="post-ui" class="hidden">
-            <select id="sel-biz"></select>
-            <select id="sel-prod"></select>
-            <input type="number" id="new-price" placeholder="Precio ($)">
-            <button class="btn" onclick="savePrice()">Actualizar Precio</button>
-        </div>
-    </div>
-</div>
-
-<div class="nav-bar">
-    <div class="nav-item active" onclick="go('list', this)">LISTA</div>
-    <div class="nav-item" onclick="go('map', this)">MAPA</div>
-    <div class="nav-item" onclick="go('add', this)">APORTAR</div>
-    <div class="nav-item" onclick="go('promo', this)">PROMO 💎</div>
-    <div id="nav-admin" class="nav-item hidden" onclick="go('admin', this)">ADMIN</div>
-</div>
-
-<script>
-    let map = L.map('map', { zoomControl: false }).setView([-33.45, -70.66], 13);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
-
-    navigator.geolocation.watchPosition(p => {
-        window.myPos = [p.coords.latitude, p.coords.longitude];
-        map.setView(window.myPos, 14);
-        L.circleMarker(window.myPos, {radius: 6, color: '#0066ff'}).addTo(map);
+    // INITIALIZATION
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            document.getElementById('splash').style.opacity = '0';
+            setTimeout(() => document.getElementById('splash').remove(), 800);
+        }, 2000);
+        initMap();
     });
 
-    map.on('click', (e) => {
-        if(!window.currentUser) return alert("Inicia sesión");
-        document.getElementById('store-popup').classList.remove('hidden');
-        document.getElementById('store-lat').value = e.latlng.lat;
-        document.getElementById('store-lng').value = e.latlng.lng;
-    });
+    // AUTHENTICATION
+    window.onAuth = async (response) => {
+        const payload = JSON.parse(atob(response.credential.split('.')[1]));
+        window.user = payload;
+        window.isAdmin = (payload.email === ADMIN_EMAIL);
 
-    window.renderList = () => {
-        const q = document.getElementById('find').value.toLowerCase();
-        let h = "";
-        window.allProducts?.filter(p => p.product.toLowerCase().includes(q)).forEach(p => {
-            h += `<div style="background:#fff; padding:15px; border-radius:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; border:1px solid #e2e8f0;">
-                <div><b>${p.product}</b><br><small>${p.bizName}</small></div>
-                <div style="color:#10b981; font-weight:800;">$${p.price}</div>
-            </div>`;
+        document.getElementById('auth-status').classList.add('hidden');
+        document.getElementById('user-profile').classList.remove('hidden');
+        document.getElementById('user-img').src = payload.picture;
+        document.getElementById('user-name').innerText = payload.given_name;
+
+        pushNotification(`¡Bienvenido, ${payload.given_name}! Visionario de Kest.`);
+        syncData();
+    };
+
+    // REAL-TIME SYNC
+    function syncData() {
+        onSnapshot(collection(db, "negocios"), (snap) => {
+            window.data.businesses = snap.docs.map(d => ({id: d.id, ...d.data()}));
+            updateDropdowns();
+            renderMarkers();
         });
-        document.getElementById('product-list').innerHTML = h;
+
+        onSnapshot(query(collection(db, "productos"), orderBy("timestamp", "desc")), (snap) => {
+            window.data.products = snap.docs.map(d => ({id: d.id, ...d.data()}));
+            renderGlobalList();
+        });
+    }
+
+    // MAP ENGINE
+    let map;
+    function initMap() {
+        map = L.map('map', { zoomControl: false }).setView([-33.45, -70.66], 13);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '© Kest Ecosystem'
+        }).addTo(map);
+
+        navigator.geolocation.watchPosition(p => {
+            const loc = [p.coords.latitude, p.coords.longitude];
+            window.myLocation = loc;
+            L.circleMarker(loc, { radius: 8, color: '#0066ff', fillColor: '#0066ff', fillOpacity: 1 }).addTo(map);
+            checkProximity(loc);
+        });
+
+        map.on('click', (e) => {
+            if(!window.user) return pushNotification("Inicia sesión para registrar tiendas");
+            document.getElementById('temp-lat').value = e.latlng.lat;
+            document.getElementById('temp-lng').value = e.latlng.lng;
+            document.getElementById('store-sheet').classList.remove('hidden');
+        });
+    }
+
+    // BUSINESS LOGIC: Store Registration
+    window.registerStore = async () => {
+        const name = document.getElementById('reg-biz-name').value;
+        if(!name) return;
+
+        try {
+            await addDoc(collection(db, "negocios"), {
+                name,
+                lat: parseFloat(document.getElementById('temp-lat').value),
+                lng: parseFloat(document.getElementById('temp-lng').value),
+                creator: window.user.email,
+                premium: false,
+                timestamp: Date.now()
+            });
+            pushNotification("¡Negocio registrado con éxito!");
+            closeSheet();
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    // BUSINESS LOGIC: Price Updates
+    window.submitPriceUpdate = async () => {
+        const bizId = document.getElementById('sel-biz-post').value;
+        const productName = document.getElementById('sel-prod-post').value;
+        const price = document.getElementById('price-input').value;
+
+        if(!bizId || !price) return pushNotification("Completa todos los campos");
+
+        const biz = window.data.businesses.find(b => b.id === bizId);
+
+        await addDoc(collection(db, "productos"), {
+            bizId,
+            bizName: biz.name,
+            product: productName,
+            price: parseFloat(price),
+            timestamp: Date.now(),
+            user: window.user.email,
+            isPremiumBiz: biz.premium || false
+        });
+
+        pushNotification("Precio actualizado. La red Kest te lo agradece.");
+        document.getElementById('price-input').value = "";
+    };
+
+    // UI RENDERING
+    window.renderGlobalList = () => {
+        const queryStr = document.getElementById('main-search').value.toLowerCase();
+        const container = document.getElementById('list-container');
+        
+        let html = "";
+        const filtered = window.data.products.filter(p => 
+            p.product.toLowerCase().includes(queryStr) || p.bizName.toLowerCase().includes(queryStr)
+        );
+
+        filtered.forEach(p => {
+            html += `
+                <div class="product-item ${p.isPremiumBiz ? 'is-premium' : ''}">
+                    <div>
+                        <div style="font-weight:800; color:var(--text-main)">${p.product}</div>
+                        <div style="font-size:12px; color:var(--text-muted)">${p.bizName} ${p.isPremiumBiz ? '⭐' : ''}</div>
+                    </div>
+                    <div class="price-tag">$${p.price.toLocaleString()}</div>
+                </div>
+            `;
+        });
+        container.innerHTML = html || "<p style='text-align:center; color:var(--text-muted);'>No hay productos que coincidan.</p>";
     };
 
     window.renderMarkers = () => {
-        window.allBusinesses?.forEach(b => {
-            const color = b.premium ? 'gold' : 'blue';
-            L.marker([b.lat, b.lng]).addTo(map).bindPopup(`<b>${b.name}</b> ${b.premium ? '⭐' : ''}`);
+        map.eachLayer(l => { if(l instanceof L.Marker) map.removeLayer(l); });
+        window.data.businesses.forEach(b => {
+            const icon = L.divIcon({
+                className: 'custom-marker',
+                html: `<div style="background:${b.premium ? 'var(--accent)' : 'var(--primary)'}; width:15px; height:15px; border-radius:50%; border:2px solid white; box-shadow:0 0 10px rgba(0,0,0,0.3)"></div>`
+            });
+            L.marker([b.lat, b.lng], { icon }).addTo(map).bindPopup(`<b>${b.name}</b><br>${b.premium ? '⭐ Tienda Destacada' : 'Tienda Regular'}`);
         });
     };
+
+    // PREMIUM SYSTEM & PAYPAL
+    window.refreshPayPal = () => {
+        const bizId = document.getElementById('sel-promo-biz').value;
+        const container = document.getElementById('paypal-button-container');
+        container.innerHTML = "";
+
+        if(!bizId) return;
+
+        paypal.HostedButtons({
+            hostedButtonId: "4FUHMFXVCPNL8",
+            onApprove: async (data, actions) => {
+                await updateDoc(doc(db, "negocios", bizId), { 
+                    premium: true, 
+                    premiumUntil: Date.now() + (30*24*60*60*1000) 
+                });
+                pushNotification("¡PAGO EXITOSO! Tu negocio ahora domina el área.");
+                location.reload();
+            }
+        }).render("#paypal-button-container");
+    };
+
+    // PROXIMITY ENGINE (Income driver: alerts nearby users)
+    function checkProximity(loc) {
+        window.data.businesses.forEach(b => {
+            if(b.premium) {
+                const distance = map.distance(loc, [b.lat, b.lng]);
+                if(distance < 2000) { // 2 Kilometers
+                    if(!sessionStorage.getItem(`ad_${b.id}`)) {
+                        pushNotification(`¡OFERTA CERCA! ${b.name} tiene precios especiales para ti.`);
+                        sessionStorage.setItem(`ad_${b.id}`, "true");
+                    }
+                }
+            }
+        });
+    }
+
+    // UTILS
+    window.navigate = (viewId, element) => {
+        document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        document.getElementById(`v-${viewId}`).classList.remove('hidden');
+        element.classList.add('active');
+        if(viewId === 'map') setTimeout(() => map.invalidateSize(), 200);
+    };
+
+    function updateDropdowns() {
+        const allBizOpts = window.data.businesses.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+        const myBizOpts = window.data.businesses
+            .filter(b => b.creator === window.user?.email)
+            .map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+        
+        document.getElementById('sel-biz-post').innerHTML = allBizOpts;
+        document.getElementById('sel-promo-biz').innerHTML = myBizOpts || `<option disabled>No tienes tiendas registradas</option>`;
+    }
+
+    function pushNotification(msg) {
+        const center = document.getElementById('notification-center');
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `
+            <div style="background:var(--primary); color:white; width:30px; height:30px; border-radius:10px; display:flex; align-items:center; justify-content:center;">!</div>
+            <div style="font-size:13px; font-weight:600;">${msg}</div>
+        `;
+        center.appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+    }
+
+    window.closeSheet = () => document.getElementById('store-sheet').classList.add('hidden');
+
 </script>
 </body>
 </html>
