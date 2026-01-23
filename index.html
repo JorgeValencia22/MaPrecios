@@ -7,50 +7,44 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        :root { --brand: #0052ff; --dark: #0f172a; --accent: #FFD140; --radius: 25px; }
+        :root { --brand: #0052ff; --dark: #0f172a; --radius: 25px; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
         body { background: #f8fafc; color: var(--dark); height: 100vh; overflow: hidden; width: 100%; position: fixed; }
 
         header { height: 70px; background: #fff; border-bottom: 1px solid #edf2f7; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; position: fixed; width: 100%; top: 0; z-index: 4000; }
-        .logo { font-size: 24px; font-weight: 900; color: var(--brand); display: flex; align-items: center; gap: 8px; }
-        .logo::before { content: '◆'; }
+        .logo { font-size: 24px; font-weight: 900; color: var(--brand); }
 
         main { height: 100vh; padding: 70px 0 80px 0; }
         .screen { display: none; height: 100%; width: 100%; padding: 20px; overflow-y: auto; }
         .screen.active { display: block; }
 
-        /* EL MAPA DEBE VERSE SIEMPRE */
-        #sc-map { padding: 25px 40px; }
-        .map-container { 
-            height: 100%; width: 100%; background: #fff; border-radius: var(--radius); 
-            padding: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-            position: relative; overflow: hidden; border: 1px solid #edf2f7;
-        }
-        #map { height: 100%; width: 100%; border-radius: 20px; z-index: 100; }
+        /* MAPA */
+        #sc-map { padding: 20px; }
+        .map-container { height: 100%; width: 100%; background: #fff; border-radius: var(--radius); padding: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); position: relative; border: 1px solid #eee; }
+        #map { height: 100%; width: 100%; border-radius: 20px; }
 
-        /* PLANES DE ANUNCIO */
-        .elite-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 900px; margin: 0 auto; }
-        .plan-card { background: #fff; padding: 30px; border-radius: var(--radius); text-align: center; border: 1px solid #e2e8f0; }
-        .plan-card h3 { margin-bottom: 15px; font-weight: 900; }
-        
-        /* BOTONES DE PAGO PAYPAL SOLICITADOS */
-        .pp-btn { display: inline-grid; justify-items: center; align-content: start; gap: 0.5rem; margin-top: 15px; }
-        .paypal-submit { text-align: center; border: none; border-radius: 0.25rem; min-width: 11.625rem; padding: 0 2rem; height: 2.625rem; font-weight: bold; background-color: #FFD140; color: #000000; font-size: 1rem; cursor: pointer; }
+        /* FORMULARIOS */
+        .card { background: #fff; padding: 25px; border-radius: var(--radius); border: 1px solid #eee; margin-bottom: 20px; }
+        .input { width: 100%; padding: 14px; margin-bottom: 12px; border-radius: 12px; border: 1px solid #ddd; font-size: 15px; }
+        .btn-main { width: 100%; padding: 16px; border-radius: 12px; border: none; background: var(--brand); color: white; font-weight: 800; cursor: pointer; }
 
+        /* VOTOS Y VALIDACION */
+        .vote-tag { font-size: 11px; font-weight: 900; background: #f1f5f9; padding: 4px 10px; border-radius: 50px; color: var(--brand); }
+
+        /* NAVEGACION */
         nav { position: fixed; bottom: 0; width: 100%; height: 80px; background: #fff; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #edf2f7; z-index: 5000; }
-        .nav-link { text-decoration: none; color: #94a3b8; font-size: 11px; font-weight: 900; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .nav-link { text-decoration: none; color: #94a3b8; font-size: 11px; font-weight: 900; }
         .nav-link.active { color: var(--brand); }
 
-        .admin-box { background: #0f172a; color: #fff; padding: 15px; border-radius: 15px; margin-top: 15px; border-left: 4px solid var(--brand); font-size: 12px; }
-
-        @media (max-width: 768px) { #sc-map { padding: 15px; } .elite-grid { grid-template-columns: 1fr; } }
+        /* PANEL ADMIN */
+        .admin-panel { background: #0f172a; color: #fff; padding: 15px; border-radius: 15px; margin-top: 10px; font-size: 12px; border-left: 5px solid var(--brand); }
     </style>
 </head>
 <body>
 
     <header>
         <div class="logo">MaPrecios</div>
-        <div id="user-display">
+        <div id="auth-box">
             <div id="g_id_onload" data-client_id="741318611947-h590d5p7s9njemslu7th8g38v09i210a.apps.googleusercontent.com" data-callback="onAuth"></div>
             <div class="g_id_signin" data-type="standard"></div>
         </div>
@@ -60,46 +54,44 @@
         <section id="sc-map" class="screen active">
             <div class="map-container">
                 <div id="map"></div>
-                <div id="st-reg" style="display:none; position:absolute; bottom:20px; left:20px; z-index:1000; background:#fff; padding:20px; border-radius:15px; box-shadow:0 10px 20px rgba(0,0,0,0.1); width:260px;">
-                    <input type="text" id="st-name" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;" placeholder="Nombre del negocio">
-                    <button style="width:100%; padding:10px; background:var(--brand); color:white; border:none; border-radius:8px; font-weight:800;" onclick="MaPrecios.saveStore()">Solicitar Registro</button>
+                <div id="pop-store" style="display:none; position:absolute; bottom:20px; left:20px; z-index:1000; background:#fff; padding:20px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.2); width:280px;">
+                    <p style="font-weight:900; margin-bottom:10px;">Nuevo Negocio</p>
+                    <input type="text" id="new-st-name" class="input" placeholder="Nombre comercial">
+                    <button class="btn-main" onclick="App.addStore()">Registrar Ubicación</button>
+                    <button style="width:100%; background:none; border:none; color:red; margin-top:10px; font-size:12px; cursor:pointer;" onclick="document.getElementById('pop-store').style.display='none'">Cancelar</button>
                 </div>
             </div>
-            <div id="admin-map" class="admin-box" style="display:none;"></div>
+            <div id="adm-st" class="admin-panel" style="display:none;"></div>
         </section>
 
         <section id="sc-radar" class="screen">
-            <div id="radar-feed" style="max-width:600px; margin:0 auto;"></div>
+            <div id="product-list" style="max-width:600px; margin:0 auto;"></div>
         </section>
 
         <section id="sc-add" class="screen">
-            <div style="max-width:500px; margin:0 auto; background:#fff; padding:30px; border-radius:var(--radius); border:1px solid #eee;">
-                <h3>Subir Precio</h3><br>
-                <select id="sel-st" style="width:100%; padding:12px; margin-bottom:10px; border-radius:10px;"></select>
-                <input type="text" id="in-p" style="width:100%; padding:12px; margin-bottom:10px; border-radius:10px;" placeholder="Producto">
-                <input type="number" id="in-v" style="width:100%; padding:12px; margin-bottom:10px; border-radius:10px;" placeholder="Precio ($)">
-                <button style="width:100%; padding:15px; background:var(--brand); color:white; border:none; border-radius:10px; font-weight:800;" onclick="MaPrecios.savePrice()">Publicar</button>
+            <div class="card" style="max-width:500px; margin:0 auto;">
+                <h3 style="margin-bottom:20px;">Vincular Producto</h3>
+                <label style="font-size:12px; font-weight:800; color:gray;">Selecciona Negocio Confirmado:</label>
+                <select id="select-store" class="input" style="margin-top:5px;"></select>
+                <input type="text" id="prod-name" class="input" placeholder="Nombre del producto">
+                <input type="number" id="prod-price" class="input" placeholder="Precio actual ($)">
+                <button class="btn-main" onclick="App.addPrice()">Publicar Precio</button>
             </div>
-            <div id="admin-prices" class="admin-box" style="display:none; max-width:500px; margin:20px auto;"></div>
+            <div id="adm-pr" class="admin-panel" style="display:none; max-width:500px; margin:20px auto;"></div>
         </section>
 
         <section id="sc-elite" class="screen">
-            <h2 style="text-align:center; margin-bottom:30px;">Planes de Anuncio</h2>
-            <div class="elite-grid">
-                <div class="plan-card">
-                    <h3>7 DÍAS</h3>
-                    <p>Posicionamiento rápido en el mapa local.</p>
-                    <form action="https://www.paypal.com/ncp/payment/9MB6JL9TDSVAL" method="post" target="_blank" class="pp-btn">
-                        <input class="paypal-submit" type="submit" value="Pagar ahora" />
-                        <img src="https://www.paypalobjects.com/images/Debit_Credit.svg" alt="cards" />
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:20px; max-width:900px; margin:0 auto;">
+                <div class="card" style="text-align:center;">
+                    <h3>7 DÍAS ELITE</h3>
+                    <form action="https://www.paypal.com/ncp/payment/9MB6JL9TDSVAL" method="post" target="_blank" style="margin-top:15px;">
+                        <input type="submit" value="Pagar ahora" style="background:#FFD140; border:none; padding:12px 30px; border-radius:5px; font-weight:bold; cursor:pointer;">
                     </form>
                 </div>
-                <div class="plan-card">
-                    <h3>1 MES</h3>
-                    <p>Dominio total y visibilidad prioritaria.</p>
-                    <form action="https://www.paypal.com/ncp/payment/GVP5ZED2Q2RLJ" method="post" target="_blank" class="pp-btn">
-                        <input class="paypal-submit" type="submit" value="Pagar ahora" />
-                        <img src="https://www.paypalobjects.com/images/Debit_Credit.svg" alt="cards" />
+                <div class="card" style="text-align:center;">
+                    <h3>1 MES ELITE</h3>
+                    <form action="https://www.paypal.com/ncp/payment/GVP5ZED2Q2RLJ" method="post" target="_blank" style="margin-top:15px;">
+                        <input type="submit" value="Pagar ahora" style="background:#FFD140; border:none; padding:12px 30px; border-radius:5px; font-weight:bold; cursor:pointer;">
                     </form>
                 </div>
             </div>
@@ -107,10 +99,10 @@
     </main>
 
     <nav>
-        <a href="#" class="nav-link active" onclick="MaPrecios.nav('sc-map', this)">MAPA</a>
-        <a href="#" class="nav-link" onclick="MaPrecios.nav('sc-radar', this)">RADAR</a>
-        <a href="#" class="nav-link" onclick="MaPrecios.nav('sc-add', this)">SUBIR</a>
-        <a href="#" class="nav-link" onclick="MaPrecios.nav('sc-elite', this)">ELITE</a>
+        <a href="#" class="nav-link active" onclick="App.nav('sc-map', this)">MAPA</a>
+        <a href="#" class="nav-link" onclick="App.nav('sc-radar', this)">RADAR</a>
+        <a href="#" class="nav-link" onclick="App.nav('sc-add', this)">SUBIR</a>
+        <a href="#" class="nav-link" onclick="App.nav('sc-elite', this)">ELITE</a>
     </nav>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -119,7 +111,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = {
+        const fbc = {
             apiKey: "AIzaSyAzNx7ARReSFqDt052rIficuErmuq10WMc",
             authDomain: "studio-2946557679-4235d.firebaseapp.com",
             projectId: "studio-2946557679-4235d",
@@ -127,31 +119,32 @@
             appId: "1:1014571657099:web:f1bb8b8619c2474c95718e"
         };
 
-        const db = getFirestore(initializeApp(firebaseConfig));
-        const ADMIN_MAIL = "jorge.valencia.abarca@gmail.com";
+        const db = getFirestore(initializeApp(fbc));
+        const MY_MAIL = "jorge.valencia.abarca@gmail.com";
 
-        window.MaPrecios = {
-            user: null, map: null, pos: null, stores: [], prices: [], markers: [],
+        window.App = {
+            user: null, map: null, tempPos: null, stores: [], prices: [], markers: [],
 
             init: () => {
-                MaPrecios.map = L.map('map', { zoomControl: false }).setView([-33.4474, -70.6736], 14);
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_all/{z}/{x}/{y}{r}.png').addTo(MaPrecios.map);
+                App.map = L.map('map', { zoomControl: false }).setView([-33.4474, -70.6736], 14);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_all/{z}/{x}/{y}{r}.png').addTo(App.map);
                 
-                MaPrecios.map.on('click', e => {
-                    if(!MaPrecios.user) return alert("Inicia sesión para poner un negocio");
-                    MaPrecios.pos = e.latlng;
-                    document.getElementById('st-reg').style.display = 'block';
+                App.map.on('click', e => {
+                    if(!App.user) return alert("Inicia sesión para agregar un negocio.");
+                    App.tempPos = e.latlng;
+                    document.getElementById('pop-store').style.display = 'block';
                 });
 
                 onSnapshot(collection(db, "negocios"), s => {
-                    MaPrecios.stores = s.docs.map(d => ({id: d.id, ...d.data()}));
-                    MaPrecios.sync();
+                    App.stores = s.docs.map(d => ({id: d.id, ...d.data()}));
+                    App.renderMap();
+                    App.syncAdmin();
                 });
 
                 onSnapshot(collection(db, "productos"), s => {
-                    MaPrecios.prices = s.docs.map(d => ({id: d.id, ...d.data()}));
-                    MaPrecios.renderRadar();
-                    MaPrecios.syncAdmin();
+                    App.prices = s.docs.map(d => ({id: d.id, ...d.data()}));
+                    App.renderRadar();
+                    App.syncAdmin();
                 });
             },
 
@@ -160,70 +153,74 @@
                 document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
                 document.getElementById(id).classList.add('active');
                 el.classList.add('active');
-                if(id === 'sc-map') setTimeout(() => MaPrecios.map.invalidateSize(), 200);
+                if(id === 'sc-map') setTimeout(() => App.map.invalidateSize(), 200);
             },
 
-            saveStore: async () => {
-                const n = document.getElementById('st-name').value;
-                if(!n || !MaPrecios.pos) return;
-                await addDoc(collection(db, "negocios"), { name: n, lat: MaPrecios.pos.lat, lng: MaPrecios.pos.lng, votes: 1, confirmed: false });
-                document.getElementById('st-reg').style.display = 'none';
-                alert("Negocio enviado. Necesita 5 confirmaciones.");
+            addStore: async () => {
+                const n = document.getElementById('new-st-name').value;
+                if(!n || !App.tempPos) return;
+                await addDoc(collection(db, "negocios"), { name: n, lat: App.tempPos.lat, lng: App.tempPos.lng, votes: 1, confirmed: false });
+                document.getElementById('pop-store').style.display = 'none';
+                document.getElementById('new-st-name').value = "";
+                alert("Negocio registrado. Se verá en el mapa tras 5 confirmaciones.");
             },
 
-            savePrice: async () => {
-                const sid = document.getElementById('sel-st').value;
-                const p = document.getElementById('in-p').value;
-                const v = document.getElementById('in-v').value;
+            addPrice: async () => {
+                const sid = document.getElementById('select-store').value;
+                const p = document.getElementById('prod-name').value;
+                const v = document.getElementById('prod-price').value;
                 if(!sid || !p || !v) return;
                 await addDoc(collection(db, "productos"), { sid, prod: p, val: parseFloat(v), votes: 1, confirmed: false });
+                document.getElementById('prod-name').value = "";
+                document.getElementById('prod-price').value = "";
                 alert("Precio enviado a validación.");
             },
 
-            sync: () => {
-                MaPrecios.markers.forEach(m => MaPrecios.map.removeLayer(m));
-                MaPrecios.stores.filter(s => s.confirmed).forEach(s => {
-                    const m = L.circleMarker([s.lat, s.lng], { radius: 10, color: '#0052ff', fillOpacity: 1 }).addTo(MaPrecios.map).bindPopup(s.name);
-                    MaPrecios.markers.push(m);
+            renderMap: () => {
+                App.markers.forEach(m => App.map.removeLayer(m));
+                App.stores.filter(s => s.confirmed).forEach(s => {
+                    const m = L.circleMarker([s.lat, s.lng], { radius: 10, color: '#0052ff', fillOpacity: 1 }).addTo(App.map).bindPopup(`<b>${s.name}</b>`);
+                    App.markers.push(m);
                 });
-                document.getElementById('sel-st').innerHTML = MaPrecios.stores.filter(s => s.confirmed).map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-                MaPrecios.syncAdmin();
+                document.getElementById('select-store').innerHTML = App.stores.filter(s => s.confirmed).map(s => `<option value="${s.id}">${s.name}</option>`).join('');
             },
 
             renderRadar: () => {
-                document.getElementById('radar-feed').innerHTML = MaPrecios.prices.filter(p => p.confirmed).map(p => `
-                    <div style="background:#fff; padding:15px; border-radius:15px; margin-bottom:10px; display:flex; justify-content:space-between; border:1px solid #eee;">
-                        <b>${p.prod}</b> <span style="color:green; font-weight:bold;">$${p.val}</span>
+                const feed = document.getElementById('product-list');
+                feed.innerHTML = App.prices.filter(p => p.confirmed).map(p => `
+                    <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                        <div><small>Producto:</small><br><b>${p.prod}</b></div>
+                        <div style="color:green; font-weight:900; font-size:20px;">$${p.val}</div>
                     </div>
                 `).join('');
             },
 
             syncAdmin: () => {
-                if(!MaPrecios.user || MaPrecios.user.email !== ADMIN_MAIL) return;
-                const mBox = document.getElementById('admin-map');
-                const pBox = document.getElementById('admin-prices');
-                mBox.style.display = 'block'; pBox.style.display = 'block';
-                
-                mBox.innerHTML = "<b>Panel Developer - Negocios:</b><br>" + MaPrecios.stores.map(s => `
-                    ${s.name} [Votos: ${s.votes}] <button onclick="MaPrecios.del('negocios','${s.id}')">Borrar</button><br>
+                if(!App.user || App.user.email !== MY_MAIL) return;
+                const stPanel = document.getElementById('adm-st');
+                const prPanel = document.getElementById('adm-pr');
+                stPanel.style.display = 'block'; prPanel.style.display = 'block';
+
+                stPanel.innerHTML = "<b>Panel Negocios:</b><br>" + App.stores.map(s => `
+                    ${s.name} (${s.votes}v) <button onclick="App.del('negocios','${s.id}')">Eliminar</button><br>
                 `).join('');
-                
-                pBox.innerHTML = "<b>Panel Developer - Productos:</b><br>" + MaPrecios.prices.map(p => `
-                    ${p.prod}: $${p.val} <button onclick="MaPrecios.del('productos','${p.id}')">Borrar</button><br>
+
+                prPanel.innerHTML = "<b>Panel Productos:</b><br>" + App.prices.map(p => `
+                    ${p.prod}: $${p.val} <button onclick="App.del('productos','${p.id}')">Eliminar</button><br>
                 `).join('');
             },
 
-            del: async (t, id) => { if(confirm("¿Borrar?")) await deleteDoc(doc(db, t, id)); }
+            del: async (t, id) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, t, id)); }
         };
 
         window.onAuth = (r) => {
             const u = JSON.parse(atob(r.credential.split('.')[1]));
-            MaPrecios.user = u;
-            document.getElementById('user-display').innerHTML = `<img src="${u.picture}" style="width:35px; border-radius:50%; border:2px solid var(--brand);">`;
-            MaPrecios.syncAdmin();
+            App.user = u;
+            document.getElementById('auth-box').innerHTML = `<img src="${u.picture}" style="width:35px; border-radius:50%; border:2px solid var(--brand);">`;
+            App.syncAdmin();
         };
 
-        MaPrecios.init();
+        App.init();
     </script>
 </body>
 </html>
