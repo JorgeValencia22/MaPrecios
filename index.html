@@ -3,504 +3,347 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MaPrecios Elite Business | Kest OS</title>
+    <title>MaPrecios | Inteligencia de Mercado by Kest.</title>
 
-    <meta name="description" content="Ecosistema de inteligencia de mercado por Kest.">
-    <meta name="referrer" content="origin-when-cross-origin">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
     <style>
         :root {
-            --k-blue: #0066ff;
-            --k-blue-dark: #004dc2;
-            --k-gold: #f59e0b;
-            --k-gold-light: #fbbf24;
-            --k-success: #10b981;
-            --k-danger: #ef4444;
-            --k-bg: #f8fafc;
-            --k-text: #0f172a;
-            --k-muted: #64748b;
-            --k-white: #ffffff;
-            --k-radius: 20px;
-            --k-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+            --mp-blue: #0052ff;
+            --mp-blue-deep: #003db3;
+            --mp-dark: #0f172a;
+            --mp-bg: #f8fafc;
+            --mp-white: #ffffff;
+            --mp-accent: #f59e0b;
+            --mp-green: #10b981;
+            --mp-red: #ef4444;
+            --font-head: 'Outfit', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --radius-xl: 24px;
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --shadow-sm: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* --- SISTEMA BASE --- */
-        * {
-            margin: 0; padding: 0; box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
+        /* RESET PROFESIONAL */
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        body { font-family: var(--font-head); background: var(--mp-bg); color: var(--mp-dark); height: 100vh; overflow: hidden; }
 
-        body {
-            background-color: var(--k-bg);
-            color: var(--k-text);
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* --- CARGADOR KEST --- */
-        #loader {
-            position: fixed; inset: 0; background: #fff; z-index: 10000;
+        /* LOADER VISIONARIO */
+        #app-loader {
+            position: fixed; inset: 0; background: var(--mp-dark); z-index: 9999;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: transform 0.8s cubic-bezier(0.87, 0, 0.13, 1);
+            transition: opacity 0.8s ease;
         }
+        .loader-spinner { width: 60px; height: 60px; border: 5px solid rgba(255,255,255,0.1); border-top-color: var(--mp-blue); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        .loader-logo {
-            width: 100px; height: 100px; background: var(--k-blue);
-            border-radius: 25px; display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 50px; font-weight: 800;
-            box-shadow: 0 20px 40px rgba(0,102,255,0.3);
-            animation: kest-pulse 1.5s infinite ease-in-out;
-        }
-
-        @keyframes kest-pulse {
-            0% { transform: scale(1); box-shadow: 0 20px 40px rgba(0,102,255,0.3); }
-            50% { transform: scale(1.1); box-shadow: 0 30px 60px rgba(0,102,255,0.4); }
-            100% { transform: scale(1); box-shadow: 0 20px 40px rgba(0,102,255,0.3); }
-        }
-
-        /* --- HEADER & NAVEGACIÓN --- */
+        /* HEADER ESTRUCTURAL */
         header {
-            height: 75px; background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(15px); border-bottom: 1px solid #e2e8f0;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 24px; z-index: 1000;
+            height: 75px; background: rgba(255,255,255,0.85); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; align-items: center;
+            justify-content: space-between; padding: 0 25px; position: fixed; width: 100%; top: 0; z-index: 1000;
         }
+        .logo { font-size: 26px; font-weight: 900; color: var(--mp-blue); letter-spacing: -1.5px; display: flex; align-items: center; gap: 10px; }
+        .logo i { font-style: normal; color: var(--mp-dark); }
+        .logo::before { content: ''; width: 14px; height: 14px; background: var(--mp-blue); border-radius: 4px; rotate: 45deg; }
 
-        .brand { font-size: 22px; font-weight: 800; letter-spacing: -1px; }
-        .brand span { color: var(--k-blue); }
+        .user-hub { display: flex; align-items: center; gap: 12px; }
+        .u-data { text-align: right; }
+        .u-name { font-size: 13px; font-weight: 800; display: block; color: var(--mp-dark); }
+        .u-status { font-size: 10px; font-weight: 700; color: var(--mp-blue); text-transform: uppercase; }
+        .u-avatar { width: 42px; height: 42px; border-radius: 12px; border: 2px solid var(--mp-blue); display: none; object-fit: cover; }
 
-        .viewport {
-            flex: 1; overflow-y: auto; padding-bottom: 90px;
-            scroll-behavior: smooth;
+        /* NAVEGACIÓN Y CONTENIDO */
+        main { height: 100vh; padding: 75px 0 90px 0; overflow-y: auto; scroll-behavior: smooth; }
+        .screen { display: none; width: 100%; max-width: 1000px; margin: 0 auto; padding: 25px; }
+        .screen.active { display: block; animation: fadeInUp 0.5s ease both; }
+
+        .card { 
+            background: #fff; border-radius: var(--radius-lg); padding: 30px; 
+            box-shadow: var(--shadow-sm); border: 1px solid rgba(0,0,0,0.04); 
+            margin-bottom: 25px; transition: var(--transition);
         }
-
-        .view { padding: 20px; max-width: 600px; margin: 0 auto; display: none; }
-        .view.active { display: block; animation: view-in 0.4s ease-out; }
-
-        @keyframes view-in {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
+        .card-h { font-size: 20px; font-weight: 900; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; color: var(--mp-dark); }
+        
+        /* MAP ENGINE */
+        .map-container { 
+            height: 400px; width: 100%; border-radius: var(--radius-xl); 
+            overflow: hidden; border: 6px solid #fff; box-shadow: var(--shadow-xl);
+            margin-bottom: 25px; position: relative; z-index: 10;
         }
+        #map-view { width: 100%; height: 100%; background: #e2e8f0; }
 
-        /* --- COMPONENTES UI --- */
-        .card {
-            background: var(--k-white); border-radius: var(--k-radius);
-            padding: 24px; margin-bottom: 20px; border: 1px solid #f1f5f9;
-            box-shadow: var(--k-shadow);
+        /* FORMS */
+        .f-group { margin-bottom: 20px; }
+        .label { font-size: 11px; font-weight: 900; color: var(--mp-blue); text-transform: uppercase; margin-bottom: 8px; display: block; letter-spacing: 1px; }
+        .input { 
+            width: 100%; padding: 16px; border-radius: 12px; border: 2px solid #f1f5f9; 
+            background: #f8fafc; font-family: inherit; font-size: 15px; font-weight: 600;
+            transition: var(--transition);
         }
-
-        .premium-card {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            color: white; border: none;
+        .input:focus { border-color: var(--mp-blue); background: #fff; }
+        
+        .btn { 
+            width: 100%; padding: 18px; border-radius: 14px; border: none; font-weight: 800; 
+            cursor: pointer; font-size: 16px; transition: var(--transition);
+            display: flex; align-items: center; justify-content: center; gap: 10px;
         }
+        .btn-main { background: var(--mp-blue); color: #fff; }
+        .btn-elite { background: var(--mp-accent); color: var(--mp-dark); }
 
-        .btn {
-            width: 100%; padding: 18px; border-radius: 16px; border: none;
-            font-size: 16px; font-weight: 700; cursor: pointer;
-            transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px;
+        /* RADAR FEED */
+        .price-item {
+            display: grid; grid-template-columns: 1fr auto; align-items: center;
+            padding: 22px; background: #fff; border-radius: 18px; margin-bottom: 15px;
+            box-shadow: var(--shadow-sm); border-left: 6px solid #e2e8f0;
         }
+        .price-item.elite { border-left-color: var(--mp-accent); background: linear-gradient(90deg, #fffcf0 0%, #fff 100%); border-width: 2px 2px 2px 8px; }
+        .p-info h4 { font-size: 18px; font-weight: 800; }
+        .p-tag { font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: var(--mp-green); }
+        .badge-elite { background: var(--mp-accent); color: var(--mp-dark); font-size: 10px; padding: 3px 8px; border-radius: 6px; margin-left: 8px; }
 
-        .btn-blue { background: var(--k-blue); color: white; }
-        .btn-blue:active { background: var(--k-blue-dark); transform: scale(0.98); }
-
-        .btn-gold { background: var(--k-gold); color: white; }
-
-        input, select {
-            width: 100%; padding: 16px; border-radius: 14px; border: 1.5px solid #e2e8f0;
-            margin-bottom: 15px; font-size: 15px; outline: none; transition: border 0.3s;
-        }
-
-        input:focus { border-color: var(--k-blue); }
-
-        /* --- MAPA --- */
-        #map-container {
-            width: 100%; height: 500px; border-radius: var(--k-radius);
-            overflow: hidden; box-shadow: var(--k-shadow); border: 2px solid #fff;
-        }
-
-        /* --- LISTADO --- */
-        .list-item {
-            display: flex; justify-content: space-between; align-items: center;
-            background: white; padding: 20px; border-radius: 18px;
-            margin-bottom: 12px; border: 1px solid #f1f5f9;
-        }
-
-        .list-item.premium { border-left: 5px solid var(--k-gold); background: #fffcf5; }
-
-        .price-badge {
-            font-size: 20px; font-weight: 800; color: var(--k-success);
-        }
-
-        /* --- BARRA NAV --- */
+        /* FOOTER NAV */
         nav {
-            position: fixed; bottom: 0; width: 100%; height: 85px;
-            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
-            border-top: 1px solid #e2e8f0; display: flex;
-            justify-content: space-around; align-items: center; padding-bottom: 15px;
+            position: fixed; bottom: 0; width: 100%; height: 85px; background: #fff;
+            display: flex; justify-content: space-around; align-items: center;
+            border-top: 1px solid #f1f5f9; padding-bottom: 15px; z-index: 1000;
         }
-
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center; gap: 4px;
-            color: var(--k-muted); cursor: pointer; font-size: 10px; font-weight: 700;
+        .nav-btn { 
+            text-decoration: none; color: #94a3b8; display: flex; flex-direction: column; 
+            align-items: center; gap: 5px; font-size: 11px; font-weight: 800;
         }
+        .nav-btn.active { color: var(--mp-blue); }
+        .nav-btn svg { width: 24px; height: 24px; }
 
-        .nav-item.active { color: var(--k-blue); }
+        /* ADMIN TOOLS */
+        .admin-only { display: none; margin-top: 10px; border-top: 1px dashed #eee; padding-top: 10px; }
+        .is-admin .admin-only { display: block; }
 
-        .nav-item svg { width: 24px; height: 24px; }
-
-        /* --- NOTIFICACIONES --- */
-        #toaster {
-            position: fixed; top: 85px; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 400px; z-index: 5000;
-        }
-
-        .toast {
-            background: white; padding: 16px 20px; border-radius: 15px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.1); border-left: 4px solid var(--k-blue);
-            margin-bottom: 10px; animation: toast-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes toast-in { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div id="loader">
-        <div class="loader-logo">K</div>
-        <p style="margin-top:20px; font-weight:700; color:var(--k-muted);">INICIANDO KEST OS...</p>
+    <div id="app-loader">
+        <div class="loader-spinner"></div>
+        <p style="color: white; margin-top: 20px; font-weight: 800; letter-spacing: 2px;">KEST. INFRASTRUCTURE</p>
     </div>
 
     <header>
-        <div class="brand">MA<span>PRECIOS</span></div>
-        <div id="user-badge" style="display:none;">
-            <img id="user-img" src="" style="width:35px; height:35px; border-radius:50%; border:2px solid var(--k-blue);">
+        <div class="logo">Ma<i>Precios</i></div>
+        <div class="user-hub">
+            <div class="u-data">
+                <span id="u-display" class="u-name">Acceso Invitado</span>
+                <span id="u-role" class="u-status">Market Explorer</span>
+            </div>
+            <img id="u-avatar" class="u-avatar" src="" alt="">
         </div>
     </header>
 
-    <div id="toaster"></div>
-
-    <main class="viewport">
-        <section id="view-explore" class="view active">
-            <div class="card" style="padding: 12px;">
-                <input type="text" id="global-search" placeholder="¿Qué quieres comprar hoy, Jorge?" style="margin:0;">
-            </div>
-            <div id="product-feed"></div>
-        </section>
-
-        <section id="view-map" class="view">
-            <div id="map-container">
-                <div id="map" style="width:100%; height:100%;"></div>
-            </div>
-            <div class="card" style="margin-top:20px;">
-                <h3>Registrar Tienda</h3>
-                <p style="font-size:13px; color:var(--k-muted); margin-bottom:15px;">Toca un punto en el mapa para iniciar.</p>
-                <div id="store-form" style="display:none;">
-                    <input type="text" id="new-store-name" placeholder="Nombre de la tienda">
-                    <button class="btn btn-blue" onclick="saveStore()">Finalizar Registro</button>
+    <main>
+        <section id="sc-map" class="screen active">
+            <div class="map-container"><div id="map-view"></div></div>
+            <div class="card">
+                <div class="card-h">📍 Registrar Negocio</div>
+                <p style="font-size:14px; color:#64748b; margin-bottom:20px;">Toca el mapa para marcar una nueva ubicación y empezar a subir precios.</p>
+                <div id="form-new-store" style="display:none;">
+                    <input type="text" id="st-name" class="input" placeholder="Nombre del Comercio..." style="margin-bottom:15px;">
+                    <button class="btn btn-main" onclick="ENGINE.logic.saveStore()">Confirmar Ubicación</button>
                 </div>
             </div>
         </section>
 
-        <section id="view-add" class="view">
-            <div id="auth-container" class="card" style="text-align:center;">
-                <h3>Colaborador Kest</h3>
-                <p style="font-size:14px; margin: 15px 0;">Debes iniciar sesión para publicar precios reales.</p>
-                <div id="g_id_onload" 
-                    data-client_id="741318611947-h590d5p7s9njemslu7th8g38v09i210a.apps.googleusercontent.com" 
-                    data-callback="onGoogleAuth">
-                </div>
-                <div class="g_id_signin" data-type="standard"></div>
-            </div>
+        <section id="sc-radar" class="screen">
+            <div class="f-group"><input type="text" id="main-filter" class="input" placeholder="🔍 Buscar productos o tiendas..."></div>
+            <div id="price-feed"></div>
+        </section>
 
-            <div id="post-container" style="display:none;">
+        <section id="sc-data" class="screen">
+            <div id="login-wall" class="card" style="text-align:center;">
+                <h2>Únete a la Red</h2>
+                <p style="margin: 20px 0;">Debes iniciar sesión para colaborar con la comunidad.</p>
+                <div id="google-signin" style="display:flex; justify-content:center;"></div>
+            </div>
+            <div id="data-panel" style="display:none;">
                 <div class="card">
-                    <h4>Publicar Precio</h4>
-                    <label style="font-size:11px; font-weight:800; color:var(--k-blue);">TIENDA</label>
-                    <select id="sel-stores"></select>
-                    
-                    <label style="font-size:11px; font-weight:800; color:var(--k-blue);">PRODUCTO</label>
-                    <input type="text" id="input-prod" placeholder="Ej: Coca Cola 2.5L">
-                    
-                    <label style="font-size:11px; font-weight:800; color:var(--k-blue);">PRECIO ACTUAL</label>
-                    <input type="number" id="input-price" placeholder="$0.00">
-                    
-                    <button class="btn btn-blue" onclick="submitData()">Publicar en Kest</button>
+                    <div class="card-h">📥 Nuevo Precio</div>
+                    <div class="f-group"><label class="label">Comercio</label><select id="sel-store" class="input"></select></div>
+                    <div class="f-group"><label class="label">Producto</label><input type="text" id="in-prod" class="input" placeholder="Ej: Coca Cola 2.5L"></div>
+                    <div class="f-group"><label class="label">Precio ($)</label><input type="number" id="in-price" class="input" placeholder="0.00"></div>
+                    <button class="btn btn-main" onclick="ENGINE.logic.uploadPrice()">Publicar Ahora</button>
                 </div>
             </div>
         </section>
 
-        <section id="view-biz" class="view">
-            <div class="card premium-card">
-                <h2 style="font-size:28px; letter-spacing:-1px;">Business Elite</h2>
-                <p style="margin:10px 0 25px 0; opacity:0.8; font-size:14px;">Convierte tu tienda en un marcador destacado y atrae a todos los usuarios en un radio de 5km.</p>
-                
-                <div class="input-group">
-                    <label style="font-size:11px; font-weight:800; color:var(--k-gold);">SELECCIONA TU TIENDA</label>
-                    <select id="sel-my-stores" style="color:#000;"></select>
+        <section id="sc-elite" class="screen">
+            <div class="card" style="background:var(--mp-dark); color:#fff; border: 2px solid var(--mp-accent);">
+                <h2 style="color:var(--mp-accent); font-size:24px;">MaPrecios Elite</h2>
+                <p style="margin:15px 0; opacity:0.8;">Destaca tus precios con la insignia de verificación y aparece primero en los resultados.</p>
+                <div class="f-group">
+                    <label class="label" style="color:#fff;">Mi Negocio Registrado</label>
+                    <select id="sel-my-biz" class="input" style="background:#1e293b; color:#fff; border:none;"></select>
                 </div>
-
-                <div id="paypal-area" style="display:none; margin-top:20px;">
-                    <div id="paypal-button-container"></div>
-                </div>
-
-                <button id="btn-activate-pay" class="btn btn-gold" onclick="loadPayPalSDK()">
-                    Activar 30 días Premium - $19.99
-                </button>
+                <div id="paypal-button-container" style="margin-top:20px;"></div>
+                <p style="text-align:center; font-size:14px; color:var(--mp-accent); font-weight:bold; margin-top:10px;">PRECIO ELITE: $5.00 USD / mes</p>
             </div>
         </section>
     </main>
 
     <nav>
-        <div class="nav-item active" onclick="navigate('explore', this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            EXPLORAR
-        </div>
-        <div class="nav-item" onclick="navigate('map', this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m6-2l5.447 2.724a1 1 0 01.553.894v10.764a1 1 0 01-1.447.894L15 17m-6 3V7m6-2v13"/></svg>
-            MAPA
-        </div>
-        <div class="nav-item" onclick="navigate('add', this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v16m8-8H4"/></svg>
-            APORTAR
-        </div>
-        <div class="nav-item" onclick="navigate('biz', this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--k-gold);"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            PROMO
-        </div>
+        <a href="javascript:void(0)" class="nav-btn active" onclick="ENGINE.ui.nav('sc-map', this)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 20l-5.447-2.724A2 2 0 013 15.487V6.513a2 2 0 011.553-1.943L9 3m6 17l5.447-2.724A2 2 0 0021 17.487V8.513a2 2 0 00-1.553-1.943L15 3m-6 17V3m6 17V3"/></svg>MAPA</a>
+        <a href="javascript:void(0)" class="nav-btn" onclick="ENGINE.ui.nav('sc-radar', this)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>RADAR</a>
+        <a href="javascript:void(0)" class="nav-btn" onclick="ENGINE.ui.nav('sc-data', this)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>SUBIR</a>
+        <a href="javascript:void(0)" class="nav-btn" onclick="ENGINE.ui.nav('sc-elite', this)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>ELITE</a>
     </nav>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-
+    <script src="https://www.paypal.com/sdk/js?client-id=BAAZ0X-3IhGgySgHkjA0ItlcqSu3fMmrTkQFmhcuPHWALq8CxO_jqGpa-4VTKlN1lQyp6c0eVNvCC7Novk&currency=USD"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // CONFIGURACIÓN FIREBASE PRO
         const firebaseConfig = {
             apiKey: "AIzaSyAzNx7ARReSFqDt052rIficuErmuq10WMc",
             authDomain: "studio-2946557679-4235d.firebaseapp.com",
             projectId: "studio-2946557679-4235d",
             storageBucket: "studio-2946557679-4235d.firebasestorage.app",
-            messagingSenderId: "1014571657099",
             appId: "1:1014571657099:web:f1bb8b8619c2474c95718e"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // ESTADO GLOBAL PROFESIONAL
-        window.KEST = {
+        window.ENGINE = {
             user: null,
-            stores: [],
-            products: [],
+            isAdmin: false,
+            adminEmail: "jorge.valencia.abarca@gmail.com",
             map: null,
-            selectedCoords: null,
-            db: db
+            tempPos: null,
+            db_local: { stores: [], prices: [] },
+
+            ui: {
+                nav: (id, el) => {
+                    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                    document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+                    document.getElementById(id).classList.add('active');
+                    el.classList.add('active');
+                    if(id === 'sc-map' && ENGINE.map) setTimeout(() => ENGINE.map.invalidateSize(), 200);
+                    if(id === 'sc-elite') ENGINE.pay.render();
+                },
+                render: () => {
+                    const box = document.getElementById('price-feed');
+                    box.innerHTML = ENGINE.db_local.prices.map(p => `
+                        <div class="price-item ${p.elite ? 'elite' : ''} animate__animated animate__fadeIn">
+                            <div class="p-info">
+                                <h4>${p.product} ${p.elite ? '<span class="badge-elite">VERIFICADO</span>' : ''}</h4>
+                                <p>📍 ${p.storeName}</p>
+                                ${ENGINE.isAdmin ? `<button class="admin-only" onclick="ENGINE.logic.deleteItem('${p.id}')">Eliminar</button>` : ''}
+                            </div>
+                            <div class="p-tag">$${Number(p.price).toLocaleString()}</div>
+                        </div>
+                    `).join('');
+                }
+            },
+
+            logic: {
+                start: () => {
+                    onSnapshot(collection(db, "negocios"), (snap) => {
+                        ENGINE.db_local.stores = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                        ENGINE.logic.syncSelectors();
+                    });
+                    onSnapshot(query(collection(db, "productos"), orderBy("timestamp", "desc")), (snap) => {
+                        ENGINE.db_local.prices = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                        ENGINE.ui.render();
+                    });
+                    setTimeout(() => {
+                        document.getElementById('app-loader').style.opacity = '0';
+                        setTimeout(() => document.getElementById('app-loader').style.display = 'none', 800);
+                    }, 1500);
+                },
+                saveStore: async () => {
+                    const name = document.getElementById('st-name').value;
+                    if(!name || !ENGINE.tempPos) return alert("Faltan datos.");
+                    await addDoc(collection(db, "negocios"), { name, lat: ENGINE.tempPos.lat, lng: ENGINE.tempPos.lng, owner: ENGINE.user.email, elite: false });
+                    document.getElementById('form-new-store').style.display = 'none';
+                    alert("Negocio registrado.");
+                },
+                uploadPrice: async () => {
+                    const sid = document.getElementById('sel-store').value;
+                    const prod = document.getElementById('in-prod').value;
+                    const pr = document.getElementById('in-price').value;
+                    if(!sid || !prod || !pr) return alert("Completa los campos.");
+                    const st = ENGINE.db_local.stores.find(x => x.id === sid);
+                    await addDoc(collection(db, "productos"), { storeId: sid, storeName: st.name, product: prod, price: parseFloat(pr), timestamp: Date.now(), elite: st.elite || false });
+                    alert("Precio subido.");
+                },
+                syncSelectors: () => {
+                    const options = ENGINE.db_local.stores.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+                    document.getElementById('sel-store').innerHTML = options;
+                    const my = ENGINE.db_local.stores.filter(s => s.owner === ENGINE.user?.email);
+                    document.getElementById('sel-my-biz').innerHTML = my.map(s => `<option value="${s.id}">${s.name}</option>`).join('') || '<option disabled>No tienes negocios registrados</option>';
+                }
+            },
+
+            pay: {
+                render: () => {
+                    const container = document.getElementById('paypal-button-container');
+                    if(container.innerHTML !== "") return;
+                    paypal.Buttons({
+                        createOrder: (data, actions) => {
+                            return actions.order.create({
+                                purchase_units: [{ amount: { currency_code: "USD", value: "5.00" }, description: "MaPrecios Elite - Business" }]
+                            });
+                        },
+                        onApprove: async (data, actions) => {
+                            const details = await actions.order.capture();
+                            const bid = document.getElementById('sel-my-biz').value;
+                            await updateDoc(doc(db, "negocios", bid), { elite: true, lastPayment: details.id });
+                            alert("¡Felicidades! Ahora eres miembro Elite.");
+                            location.reload();
+                        }
+                    }).render('#paypal-button-container');
+                }
+            }
         };
 
-        // --- INICIALIZACIÓN ---
-        window.onload = () => {
-            initMap();
-            syncData();
-            setTimeout(() => {
-                document.getElementById('loader').style.transform = 'translateY(-100%)';
-            }, 2000);
+        // MAP INIT
+        ENGINE.map = L.map('map-view', { zoomControl: false }).setView([-33.4474, -70.6736], 13);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_all/{z}/{x}/{y}{r}.png').addTo(ENGINE.map);
+        ENGINE.map.on('click', (e) => {
+            if(!ENGINE.user) return alert("Inicia sesión primero.");
+            ENGINE.tempPos = e.latlng;
+            document.getElementById('form-new-store').style.display = 'block';
+        });
+
+        // AUTH INIT
+        const gScript = document.createElement('script');
+        gScript.src = "https://accounts.google.com/gsi/client";
+        gScript.onload = () => {
+            google.accounts.id.initialize({
+                client_id: "741318611947-h590d5p7s9njemslu7th8g38v09i210a.apps.googleusercontent.com",
+                callback: (r) => {
+                    const u = JSON.parse(atob(r.credential.split('.')[1]));
+                    ENGINE.user = u;
+                    if(u.email === ENGINE.adminEmail) { ENGINE.isAdmin = true; document.body.classList.add('is-admin'); }
+                    document.getElementById('login-wall').style.display = 'none';
+                    document.getElementById('data-panel').style.display = 'block';
+                    document.getElementById('u-display').innerText = u.name;
+                    document.getElementById('u-avatar').src = u.picture;
+                    document.getElementById('u-avatar').style.display = 'block';
+                    ENGINE.logic.syncSelectors();
+                }
+            });
+            google.accounts.id.renderButton(document.getElementById("google-signin"), { theme: "outline", size: "large", shape: "pill" });
         };
+        document.head.appendChild(gScript);
 
-        // --- AUTENTICACIÓN ---
-        window.onGoogleAuth = (response) => {
-            const user = JSON.parse(atob(response.credential.split('.')[1]));
-            window.KEST.user = user;
-            
-            document.getElementById('auth-container').style.display = 'none';
-            document.getElementById('post-container').style.display = 'block';
-            document.getElementById('user-badge').style.display = 'block';
-            document.getElementById('user-img').src = user.picture;
-            
-            showToast(`Bienvenido de nuevo, Jorge`);
-            refreshStoreSelectors();
-        };
-
-        // --- MAPA ENGINE ---
-        function initMap() {
-            window.KEST.map = L.map('map', { zoomControl: false }).setView([-33.45, -70.66], 13);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(window.KEST.map);
-
-            window.KEST.map.on('click', (e) => {
-                if(!window.KEST.user) return showToast("Inicia sesión para registrar puntos.");
-                window.KEST.selectedCoords = e.latlng;
-                document.getElementById('store-form').style.display = 'block';
-                showToast("Punto seleccionado. Ingresa el nombre.");
-            });
-
-            // Ubicación real
-            navigator.geolocation.getCurrentPosition(p => {
-                const pos = [p.coords.latitude, p.coords.longitude];
-                window.KEST.map.setView(pos, 15);
-                L.circle(pos, { radius: 200, color: '#0066ff' }).addTo(window.KEST.map);
-            });
-        }
-
-        // --- DATOS REAL-TIME ---
-        function syncData() {
-            // Sincronizar Tiendas
-            onSnapshot(collection(db, "negocios"), (snap) => {
-                window.KEST.stores = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                renderMarkers();
-                refreshStoreSelectors();
-            });
-
-            // Sincronizar Productos
-            onSnapshot(query(collection(db, "productos"), orderBy("timestamp", "desc")), (snap) => {
-                window.KEST.products = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                renderFeed();
-            });
-        }
-
-        // --- LÓGICA DE NEGOCIO ---
-        window.saveStore = async () => {
-            const name = document.getElementById('new-store-name').value;
-            if(!name || !window.KEST.selectedCoords) return;
-
-            await addDoc(collection(db, "negocios"), {
-                name: name,
-                lat: window.KEST.selectedCoords.lat,
-                lng: window.KEST.selectedCoords.lng,
-                creator: window.KEST.user.email,
-                premium: false,
-                timestamp: Date.now()
-            });
-
-            document.getElementById('store-form').style.display = 'none';
-            document.getElementById('new-store-name').value = "";
-            showToast("Tienda registrada en la red Kest.");
-        };
-
-        window.submitData = async () => {
-            const storeId = document.getElementById('sel-stores').value;
-            const product = document.getElementById('input-prod').value;
-            const price = document.getElementById('input-price').value;
-
-            if(!storeId || !product || !price) return showToast("Completa todos los datos.");
-
-            const store = window.KEST.stores.find(s => s.id === storeId);
-
-            await addDoc(collection(db, "productos"), {
-                storeId,
-                storeName: store.name,
-                product: product,
-                price: parseFloat(price),
-                user: window.KEST.user.email,
-                timestamp: Date.now(),
-                isPremium: store.premium || false
-            });
-
-            document.getElementById('input-prod').value = "";
-            document.getElementById('input-price').value = "";
-            showToast("Información compartida con éxito.");
-        };
-
-        // --- RENDERIZADO ---
-        function renderFeed() {
-            const container = document.getElementById('product-feed');
-            container.innerHTML = "";
-            
-            window.KEST.products.forEach(p => {
-                const div = document.createElement('div');
-                div.className = `list-item ${p.isPremium ? 'premium' : ''}`;
-                div.innerHTML = `
-                    <div>
-                        <div style="font-weight:800; font-size:16px;">${p.product}</div>
-                        <div style="font-size:12px; color:var(--k-muted);">${p.storeName} ${p.isPremium ? '⭐' : ''}</div>
-                    </div>
-                    <div class="price-badge">$${p.price.toLocaleString()}</div>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        function renderMarkers() {
-            window.KEST.stores.forEach(s => {
-                const color = s.premium ? '#f59e0b' : '#0066ff';
-                L.marker([s.lat, s.lng], {
-                    icon: L.divIcon({
-                        className: 'custom-icon',
-                        html: `<div style="background:${color}; width:12px; height:12px; border-radius:50%; border:2px solid white;"></div>`
-                    })
-                }).addTo(window.KEST.map).bindPopup(`<b>${s.name}</b>`);
-            });
-        }
-
-        function refreshStoreSelectors() {
-            const selAll = document.getElementById('sel-stores');
-            const selMine = document.getElementById('sel-my-stores');
-            
-            selAll.innerHTML = window.KEST.stores.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-            
-            const mine = window.KEST.stores.filter(s => s.creator === window.KEST.user?.email);
-            selMine.innerHTML = mine.map(s => `<option value="${s.id}">${s.name}</option>`).join('') || '<option disabled>No tienes tiendas</option>';
-        }
-
-        // --- SISTEMA DE PAGOS (EL MOTOR DE DINERO) ---
-        window.loadPayPalSDK = () => {
-            const btn = document.getElementById('btn-activate-pay');
-            btn.innerHTML = "Cargando pasarela...";
-            
-            const script = document.createElement('script');
-            script.src = "https://www.paypal.com/sdk/js?client-id=BAAZ0X-3IhGgySgHkjA0ItlcqSu3fMmrTkQFmhcuPHWALq8CxO_jqGpa-4VTKlN1lQyp6c0eVNvCC7Novk&components=hosted-buttons&disable-funding=venmo&currency=USD";
-            script.onload = () => {
-                document.getElementById('paypal-area').style.display = 'block';
-                btn.style.display = 'none';
-                
-                paypal.HostedButtons({
-                    hostedButtonId: "4FUHMFXVCPNL8",
-                    onApprove: async (data, actions) => {
-                        const storeId = document.getElementById('sel-my-stores').value;
-                        await updateDoc(doc(db, "negocios", storeId), { premium: true });
-                        showToast("¡PAGO EXITOSO! Tienda ahora es Premium.");
-                        location.reload();
-                    }
-                }).render("#paypal-button-container");
-            };
-            document.head.appendChild(script);
-        };
-
-        // --- UTILIDADES ---
-        window.navigate = (target, el) => {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(`view-${target}`).classList.add('active');
-            el.classList.add('active');
-            if(target === 'map') setTimeout(() => window.KEST.map.invalidateSize(), 300);
-        };
-
-        function showToast(msg) {
-            const t = document.createElement('div');
-            t.className = 'toast';
-            t.innerText = msg;
-            document.getElementById('toaster').appendChild(t);
-            setTimeout(() => t.remove(), 4000);
-        }
-
-        window.searchProducts = () => {
-            const q = document.getElementById('global-search').value.toLowerCase();
-            const items = document.querySelectorAll('.list-item');
-            items.forEach(i => {
-                const text = i.innerText.toLowerCase();
-                i.style.display = text.includes(q) ? 'flex' : 'none';
-            });
-        };
-        document.getElementById('global-search').addEventListener('keyup', window.searchProducts);
-
+        ENGINE.logic.start();
     </script>
 </body>
 </html>
