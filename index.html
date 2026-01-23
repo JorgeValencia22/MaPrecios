@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        :root { --brand: #0052ff; --dark: #0f172a; --accent: #FFD140; --radius: 20px; }
+        :root { --brand: #0052ff; --dark: #0f172a; --accent: #FFD140; --radius: 25px; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
         body { background: #f8fafc; color: var(--dark); height: 100vh; overflow: hidden; width: 100%; position: fixed; }
 
@@ -15,46 +15,42 @@
         .logo { font-size: 24px; font-weight: 900; color: var(--brand); display: flex; align-items: center; gap: 8px; }
         .logo::before { content: '◆'; }
 
-        main { height: 100vh; padding: 70px 0 80px 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        .screen { display: none; padding: 20px; max-width: 1000px; margin: 0 auto; animation: fadeIn 0.3s ease; }
+        main { height: 100vh; padding: 70px 0 80px 0; }
+        .screen { display: none; height: 100%; width: 100%; padding: 20px; overflow-y: auto; }
         .screen.active { display: block; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* EL MAPA DEBE VERSE SIEMPRE */
+        #sc-map { padding: 25px 40px; }
+        .map-container { 
+            height: 100%; width: 100%; background: #fff; border-radius: var(--radius); 
+            padding: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+            position: relative; overflow: hidden; border: 1px solid #edf2f7;
+        }
+        #map { height: 100%; width: 100%; border-radius: 20px; z-index: 100; }
 
-        /* MAPA */
-        .map-wrapper { height: 450px; border-radius: 30px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 8px solid #fff; position: relative; margin-bottom: 20px; }
-        #map { height: 100%; width: 100%; z-index: 1; }
-
-        /* ADMIN */
-        .admin-zone { background: #0f172a; color: #fff; padding: 20px; border-radius: var(--radius); margin-bottom: 20px; border: 2px solid var(--brand); }
-        .admin-title { font-weight: 900; color: var(--brand); margin-bottom: 15px; font-size: 14px; text-transform: uppercase; }
-
-        /* CARDS */
-        .card { background: #fff; padding: 20px; border-radius: var(--radius); border: 1px solid #eee; margin-bottom: 15px; position: relative; }
-        .price-tag { font-weight: 900; color: #10b981; font-size: 20px; }
-        .vote-count { font-size: 12px; font-weight: 800; background: #f1f5f9; padding: 4px 10px; border-radius: 50px; }
+        /* PLANES DE ANUNCIO */
+        .elite-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 900px; margin: 0 auto; }
+        .plan-card { background: #fff; padding: 30px; border-radius: var(--radius); text-align: center; border: 1px solid #e2e8f0; }
+        .plan-card h3 { margin-bottom: 15px; font-weight: 900; }
         
-        .btn-action { padding: 10px; border-radius: 10px; border: none; font-weight: 800; cursor: pointer; transition: 0.2s; }
-        .btn-confirm { background: #e0f2fe; color: #0369a1; }
-        .btn-delete { background: #fee2e2; color: #b91c1c; font-size: 11px; margin-top: 10px; }
-
-        /* PAGOS */
-        .pay-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
-        .pay-box { background: #fff; padding: 25px; border-radius: var(--radius); text-align: center; border: 1px solid #e2e8f0; }
+        /* BOTONES DE PAGO PAYPAL SOLICITADOS */
+        .pp-btn { display: inline-grid; justify-items: center; align-content: start; gap: 0.5rem; margin-top: 15px; }
+        .paypal-submit { text-align: center; border: none; border-radius: 0.25rem; min-width: 11.625rem; padding: 0 2rem; height: 2.625rem; font-weight: bold; background-color: #FFD140; color: #000000; font-size: 1rem; cursor: pointer; }
 
         nav { position: fixed; bottom: 0; width: 100%; height: 80px; background: #fff; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #edf2f7; z-index: 5000; }
         .nav-link { text-decoration: none; color: #94a3b8; font-size: 11px; font-weight: 900; display: flex; flex-direction: column; align-items: center; gap: 5px; }
         .nav-link.active { color: var(--brand); }
-        
-        .input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 10px; font-size: 15px; }
-        .btn-main { width: 100%; padding: 16px; border-radius: 12px; border: none; background: var(--brand); color: white; font-weight: 800; cursor: pointer; }
+
+        .admin-box { background: #0f172a; color: #fff; padding: 15px; border-radius: 15px; margin-top: 15px; border-left: 4px solid var(--brand); font-size: 12px; }
+
+        @media (max-width: 768px) { #sc-map { padding: 15px; } .elite-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
     <header>
         <div class="logo">MaPrecios</div>
-        <div id="auth-area">
+        <div id="user-display">
             <div id="g_id_onload" data-client_id="741318611947-h590d5p7s9njemslu7th8g38v09i210a.apps.googleusercontent.com" data-callback="onAuth"></div>
             <div class="g_id_signin" data-type="standard"></div>
         </div>
@@ -62,56 +58,47 @@
 
     <main>
         <section id="sc-map" class="screen active">
-            <div class="map-wrapper"><div id="map"></div></div>
-            <div id="panel-admin-map" class="admin-zone" style="display:none;">
-                <p class="admin-title">Panel Desarrollador: Negocios Pendientes</p>
-                <div id="admin-stores-list"></div>
+            <div class="map-container">
+                <div id="map"></div>
+                <div id="st-reg" style="display:none; position:absolute; bottom:20px; left:20px; z-index:1000; background:#fff; padding:20px; border-radius:15px; box-shadow:0 10px 20px rgba(0,0,0,0.1); width:260px;">
+                    <input type="text" id="st-name" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;" placeholder="Nombre del negocio">
+                    <button style="width:100%; padding:10px; background:var(--brand); color:white; border:none; border-radius:8px; font-weight:800;" onclick="MaPrecios.saveStore()">Solicitar Registro</button>
+                </div>
             </div>
-            <div id="reg-store" class="card" style="display:none;">
-                <h3>Registrar Negocio</h3>
-                <p style="font-size:12px; color:gray; margin-bottom:10px;">Requiere 5 confirmaciones para ser público.</p>
-                <input type="text" id="st-name" class="input" placeholder="Nombre del negocio">
-                <button class="btn-main" onclick="MaPrecios.saveStore()">Solicitar Registro</button>
-            </div>
+            <div id="admin-map" class="admin-box" style="display:none;"></div>
         </section>
 
         <section id="sc-radar" class="screen">
-            <input type="text" id="search" class="input" placeholder="🔍 Buscar productos confirmados...">
-            <div id="radar-list"></div>
+            <div id="radar-feed" style="max-width:600px; margin:0 auto;"></div>
         </section>
 
         <section id="sc-add" class="screen">
-            <div class="card">
-                <h3>Subir nuevo precio</h3>
-                <select id="sel-st" class="input"></select>
-                <input type="text" id="in-prod" class="input" placeholder="Producto">
-                <input type="number" id="in-price" class="input" placeholder="Precio $">
-                <button class="btn-main" onclick="MaPrecios.savePrice()">Enviar para validación</button>
+            <div style="max-width:500px; margin:0 auto; background:#fff; padding:30px; border-radius:var(--radius); border:1px solid #eee;">
+                <h3>Subir Precio</h3><br>
+                <select id="sel-st" style="width:100%; padding:12px; margin-bottom:10px; border-radius:10px;"></select>
+                <input type="text" id="in-p" style="width:100%; padding:12px; margin-bottom:10px; border-radius:10px;" placeholder="Producto">
+                <input type="number" id="in-v" style="width:100%; padding:12px; margin-bottom:10px; border-radius:10px;" placeholder="Precio ($)">
+                <button style="width:100%; padding:15px; background:var(--brand); color:white; border:none; border-radius:10px; font-weight:800;" onclick="MaPrecios.savePrice()">Publicar</button>
             </div>
-            <div id="panel-admin-prices" class="admin-zone" style="display:none; margin-top:20px;">
-                <p class="admin-title">Panel Desarrollador: Moderación de Precios</p>
-                <div id="admin-prices-list"></div>
-            </div>
+            <div id="admin-prices" class="admin-box" style="display:none; max-width:500px; margin:20px auto;"></div>
         </section>
 
         <section id="sc-elite" class="screen">
-            <h2 style="text-align:center; margin-bottom:20px;">Publicidad en MaPrecios</h2>
-            <div class="pay-container">
-                <div class="pay-box">
-                    <h4>Anuncio 7 Días</h4>
-                    <p style="font-size:12px; color:gray; margin:10px 0;">Radio 10km</p>
-                    <style>.pp-9MB6JL9TDSVAL{text-align:center;border:none;border-radius:0.25rem;min-width:11.625rem;padding:0 2rem;height:2.625rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:"Helvetica Neue",Arial,sans-serif;font-size:1rem;line-height:1.25rem;cursor:pointer;}</style>
-                    <form action="https://www.paypal.com/ncp/payment/9MB6JL9TDSVAL" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
-                        <input class="pp-9MB6JL9TDSVAL" type="submit" value="Pagar ahora" />
+            <h2 style="text-align:center; margin-bottom:30px;">Planes de Anuncio</h2>
+            <div class="elite-grid">
+                <div class="plan-card">
+                    <h3>7 DÍAS</h3>
+                    <p>Posicionamiento rápido en el mapa local.</p>
+                    <form action="https://www.paypal.com/ncp/payment/9MB6JL9TDSVAL" method="post" target="_blank" class="pp-btn">
+                        <input class="paypal-submit" type="submit" value="Pagar ahora" />
                         <img src="https://www.paypalobjects.com/images/Debit_Credit.svg" alt="cards" />
                     </form>
                 </div>
-                <div class="pay-box">
-                    <h4>Anuncio 1 Mes</h4>
-                    <p style="font-size:12px; color:gray; margin:10px 0;">Máxima prioridad</p>
-                    <style>.pp-GVP5ZED2Q2RLJ{text-align:center;border:none;border-radius:0.25rem;min-width:11.625rem;padding:0 2rem;height:2.625rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:"Helvetica Neue",Arial,sans-serif;font-size:1rem;line-height:1.25rem;cursor:pointer;}</style>
-                    <form action="https://www.paypal.com/ncp/payment/GVP5ZED2Q2RLJ" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
-                        <input class="pp-GVP5ZED2Q2RLJ" type="submit" value="Pagar ahora" />
+                <div class="plan-card">
+                    <h3>1 MES</h3>
+                    <p>Dominio total y visibilidad prioritaria.</p>
+                    <form action="https://www.paypal.com/ncp/payment/GVP5ZED2Q2RLJ" method="post" target="_blank" class="pp-btn">
+                        <input class="paypal-submit" type="submit" value="Pagar ahora" />
                         <img src="https://www.paypalobjects.com/images/Debit_Credit.svg" alt="cards" />
                     </form>
                 </div>
@@ -128,12 +115,11 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, doc, deleteDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const cfg = {
+        const firebaseConfig = {
             apiKey: "AIzaSyAzNx7ARReSFqDt052rIficuErmuq10WMc",
             authDomain: "studio-2946557679-4235d.firebaseapp.com",
             projectId: "studio-2946557679-4235d",
@@ -141,8 +127,8 @@
             appId: "1:1014571657099:web:f1bb8b8619c2474c95718e"
         };
 
-        const db = getFirestore(initializeApp(cfg));
-        const ADMIN_EMAIL = "jorge.valencia.abarca@gmail.com";
+        const db = getFirestore(initializeApp(firebaseConfig));
+        const ADMIN_MAIL = "jorge.valencia.abarca@gmail.com";
 
         window.MaPrecios = {
             user: null, map: null, pos: null, stores: [], prices: [], markers: [],
@@ -152,21 +138,20 @@
                 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_all/{z}/{x}/{y}{r}.png').addTo(MaPrecios.map);
                 
                 MaPrecios.map.on('click', e => {
-                    if(!MaPrecios.user) return;
+                    if(!MaPrecios.user) return alert("Inicia sesión para poner un negocio");
                     MaPrecios.pos = e.latlng;
-                    document.getElementById('reg-store').style.display = 'block';
+                    document.getElementById('st-reg').style.display = 'block';
                 });
 
                 onSnapshot(collection(db, "negocios"), s => {
                     MaPrecios.stores = s.docs.map(d => ({id: d.id, ...d.data()}));
-                    MaPrecios.renderMap();
-                    MaPrecios.renderAdmin();
+                    MaPrecios.sync();
                 });
 
                 onSnapshot(collection(db, "productos"), s => {
                     MaPrecios.prices = s.docs.map(d => ({id: d.id, ...d.data()}));
                     MaPrecios.renderRadar();
-                    MaPrecios.renderAdmin();
+                    MaPrecios.syncAdmin();
                 });
             },
 
@@ -179,84 +164,63 @@
             },
 
             saveStore: async () => {
-                const name = document.getElementById('st-name').value;
-                if(!name || !MaPrecios.pos) return;
-                await addDoc(collection(db, "negocios"), { name, lat: MaPrecios.pos.lat, lng: MaPrecios.pos.lng, votes: 1, confirmed: false, owner: MaPrecios.user.email });
-                document.getElementById('reg-store').style.display = 'none';
+                const n = document.getElementById('st-name').value;
+                if(!n || !MaPrecios.pos) return;
+                await addDoc(collection(db, "negocios"), { name: n, lat: MaPrecios.pos.lat, lng: MaPrecios.pos.lng, votes: 1, confirmed: false });
+                document.getElementById('st-reg').style.display = 'none';
+                alert("Negocio enviado. Necesita 5 confirmaciones.");
             },
 
             savePrice: async () => {
                 const sid = document.getElementById('sel-st').value;
-                const p = document.getElementById('in-prod').value;
-                const v = document.getElementById('in-price').value;
+                const p = document.getElementById('in-p').value;
+                const v = document.getElementById('in-v').value;
                 if(!sid || !p || !v) return;
-                await addDoc(collection(db, "productos"), { sid, prod: p, val: parseFloat(v), votes: 1, confirmed: false, user: MaPrecios.user.email });
-                alert("Enviado a validación comunitaria.");
+                await addDoc(collection(db, "productos"), { sid, prod: p, val: parseFloat(v), votes: 1, confirmed: false });
+                alert("Precio enviado a validación.");
             },
 
-            vote: async (type, id) => {
-                const ref = doc(db, type, id);
-                await updateDoc(ref, { votes: increment(1) });
-                // Lógica de auto-confirmación a los 5 votos
-                const item = (type === 'negocios' ? MaPrecios.stores : MaPrecios.prices).find(x => x.id === id);
-                if(item.votes >= 4) await updateDoc(ref, { confirmed: true });
-            },
-
-            deleteItem: async (type, id) => {
-                if(confirm("¿Borrar definitivamente de MaPrecios?")) await deleteDoc(doc(db, type, id));
-            },
-
-            renderMap: () => {
+            sync: () => {
                 MaPrecios.markers.forEach(m => MaPrecios.map.removeLayer(m));
                 MaPrecios.stores.filter(s => s.confirmed).forEach(s => {
-                    const m = L.circleMarker([s.lat, s.lng], { radius: 10, color: '#0052ff', fillOpacity: 1 }).addTo(MaPrecios.map).bindPopup(`<b>${s.name}</b>`);
+                    const m = L.circleMarker([s.lat, s.lng], { radius: 10, color: '#0052ff', fillOpacity: 1 }).addTo(MaPrecios.map).bindPopup(s.name);
                     MaPrecios.markers.push(m);
                 });
-                const opt = MaPrecios.stores.filter(s => s.confirmed).map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-                document.getElementById('sel-st').innerHTML = opt;
+                document.getElementById('sel-st').innerHTML = MaPrecios.stores.filter(s => s.confirmed).map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+                MaPrecios.syncAdmin();
             },
 
             renderRadar: () => {
-                const list = document.getElementById('radar-list');
-                list.innerHTML = MaPrecios.prices.filter(p => p.confirmed).map(p => `
-                    <div class="card">
-                        <div style="display:flex; justify-content:space-between;">
-                            <div><b>${p.prod}</b></div>
-                            <div class="price-tag">$${p.val}</div>
-                        </div>
+                document.getElementById('radar-feed').innerHTML = MaPrecios.prices.filter(p => p.confirmed).map(p => `
+                    <div style="background:#fff; padding:15px; border-radius:15px; margin-bottom:10px; display:flex; justify-content:space-between; border:1px solid #eee;">
+                        <b>${p.prod}</b> <span style="color:green; font-weight:bold;">$${p.val}</span>
                     </div>
                 `).join('');
             },
 
-            renderAdmin: () => {
-                if(!MaPrecios.user || MaPrecios.user.email !== ADMIN_EMAIL) return;
+            syncAdmin: () => {
+                if(!MaPrecios.user || MaPrecios.user.email !== ADMIN_MAIL) return;
+                const mBox = document.getElementById('admin-map');
+                const pBox = document.getElementById('admin-prices');
+                mBox.style.display = 'block'; pBox.style.display = 'block';
                 
-                document.getElementById('panel-admin-map').style.display = 'block';
-                document.getElementById('panel-admin-prices').style.display = 'block';
-
-                const sList = document.getElementById('admin-stores-list');
-                sList.innerHTML = MaPrecios.stores.map(s => `
-                    <div style="font-size:12px; border-bottom:1px solid #334155; padding:10px 0;">
-                        ${s.name} (${s.votes} votos) ${s.confirmed ? '✅' : '⏳'}
-                        <br><button class="btn-delete" onclick="MaPrecios.deleteItem('negocios','${s.id}')">ELIMINAR</button>
-                    </div>
+                mBox.innerHTML = "<b>Panel Developer - Negocios:</b><br>" + MaPrecios.stores.map(s => `
+                    ${s.name} [Votos: ${s.votes}] <button onclick="MaPrecios.del('negocios','${s.id}')">Borrar</button><br>
                 `).join('');
-
-                const pList = document.getElementById('admin-prices-list');
-                pList.innerHTML = MaPrecios.prices.map(p => `
-                    <div style="font-size:12px; border-bottom:1px solid #334155; padding:10px 0;">
-                        ${p.prod}: $${p.val} (${p.votes} votos)
-                        <br><button class="btn-delete" onclick="MaPrecios.deleteItem('productos','${p.id}')">ELIMINAR</button>
-                    </div>
+                
+                pBox.innerHTML = "<b>Panel Developer - Productos:</b><br>" + MaPrecios.prices.map(p => `
+                    ${p.prod}: $${p.val} <button onclick="MaPrecios.del('productos','${p.id}')">Borrar</button><br>
                 `).join('');
-            }
+            },
+
+            del: async (t, id) => { if(confirm("¿Borrar?")) await deleteDoc(doc(db, t, id)); }
         };
 
-        window.onAuth = (res) => {
-            const u = JSON.parse(atob(res.credential.split('.')[1]));
+        window.onAuth = (r) => {
+            const u = JSON.parse(atob(r.credential.split('.')[1]));
             MaPrecios.user = u;
-            document.getElementById('auth-area').innerHTML = `<img src="${u.picture}" style="width:35px; border-radius:50%; border:2px solid #0052ff;">`;
-            MaPrecios.renderAdmin();
+            document.getElementById('user-display').innerHTML = `<img src="${u.picture}" style="width:35px; border-radius:50%; border:2px solid var(--brand);">`;
+            MaPrecios.syncAdmin();
         };
 
         MaPrecios.init();
