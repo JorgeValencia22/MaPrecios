@@ -3,168 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MaPrecios | Inteligencia de Mercado</title>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <title>MaPrecios</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-
     <style>
-        :root {
-            --brand: #0052ff;
-            --dark: #0f172a;
-            --bg: #f8fafc;
-            --accent: #f59e0b;
-            --success: #10b981;
-            --radius: 20px;
-            --shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-        }
+        :root { --brand: #0052ff; --dark: #0f172a; --accent: #FFD140; --radius: 20px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: #f8fafc; color: var(--dark); height: 100vh; overflow: hidden; width: 100%; position: fixed; }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: var(--dark); height: 100vh; overflow: hidden; position: fixed; width: 100%; }
+        header { height: 70px; background: #fff; border-bottom: 1px solid #edf2f7; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; position: fixed; width: 100%; top: 0; z-index: 4000; }
+        .logo { font-size: 24px; font-weight: 900; color: var(--brand); display: flex; align-items: center; gap: 8px; }
+        .logo::before { content: '◆'; }
 
-        /* HEADER */
-        header {
-            height: 70px; background: #fff; border-bottom: 1px solid #e2e8f0;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 20px; position: fixed; width: 100%; top: 0; z-index: 2000;
-        }
-        .logo { font-size: 22px; font-weight: 900; color: var(--brand); letter-spacing: -1px; }
-        .logo span { color: var(--dark); }
+        main { height: 100vh; padding: 70px 0 80px 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .screen { display: none; padding: 20px; max-width: 1000px; margin: 0 auto; animation: fadeIn 0.3s ease; }
+        .screen.active { display: block; }
 
-        .profile-zone { display: flex; align-items: center; gap: 10px; }
-        .user-pill { display: none; background: #f1f5f9; padding: 5px 12px; border-radius: 50px; align-items: center; gap: 8px; border: 1px solid #e2e8f0; }
-        .user-pill img { width: 28px; height: 28px; border-radius: 50%; }
-        .user-pill span { font-size: 12px; font-weight: 700; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* VIEWPORT */
-        main { height: 100vh; padding: 70px 0 85px 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        .screen { display: none; width: 100%; max-width: 800px; margin: 0 auto; padding: 20px; }
-        .screen.active { display: block; animation: fadeIn 0.4s ease; }
+        /* MAPA */
+        .map-wrapper { height: 450px; border-radius: 30px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 8px solid #fff; position: relative; margin-bottom: 20px; }
+        #map { height: 100%; width: 100%; z-index: 1; }
 
-        /* MAPA - ARREGLO DE CAPAS */
-        .map-wrapper { 
-            height: 60vh; width: 100%; border-radius: var(--radius); 
-            overflow: hidden; border: 4px solid #fff; box-shadow: var(--shadow);
-            position: relative; z-index: 10; margin-bottom: 20px;
-        }
-        #map { width: 100%; height: 100%; }
+        /* ADMIN */
+        .admin-zone { background: #0f172a; color: #fff; padding: 20px; border-radius: var(--radius); margin-bottom: 20px; border: 2px solid var(--brand); }
+        .admin-title { font-weight: 900; color: var(--brand); margin-bottom: 15px; font-size: 14px; text-transform: uppercase; }
 
-        /* CARDS PROFESIONALES */
-        .card { background: #fff; border-radius: var(--radius); padding: 25px; box-shadow: var(--shadow); margin-bottom: 20px; }
-        .card-title { font-size: 18px; font-weight: 900; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        /* CARDS */
+        .card { background: #fff; padding: 20px; border-radius: var(--radius); border: 1px solid #eee; margin-bottom: 15px; position: relative; }
+        .price-tag { font-weight: 900; color: #10b981; font-size: 20px; }
+        .vote-count { font-size: 12px; font-weight: 800; background: #f1f5f9; padding: 4px 10px; border-radius: 50px; }
+        
+        .btn-action { padding: 10px; border-radius: 10px; border: none; font-weight: 800; cursor: pointer; transition: 0.2s; }
+        .btn-confirm { background: #e0f2fe; color: #0369a1; }
+        .btn-delete { background: #fee2e2; color: #b91c1c; font-size: 11px; margin-top: 10px; }
 
-        /* FORMULARIOS */
-        .input { width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #f1f5f9; background: #f8fafc; font-size: 15px; margin-bottom: 15px; transition: 0.3s; }
-        .input:focus { border-color: var(--brand); background: #fff; }
-        .btn { width: 100%; padding: 16px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; transition: 0.3s; font-size: 15px; }
-        .btn-main { background: var(--brand); color: #fff; }
-        .btn-main:active { transform: scale(0.98); }
+        /* PAGOS */
+        .pay-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+        .pay-box { background: #fff; padding: 25px; border-radius: var(--radius); text-align: center; border: 1px solid #e2e8f0; }
 
-        /* FEED DE PRECIOS */
-        .price-row { 
-            display: flex; justify-content: space-between; align-items: center;
-            background: #fff; padding: 18px; border-radius: 15px; margin-bottom: 10px;
-            border-left: 5px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-        .price-row.premium { border-left-color: var(--accent); background: #fffdf5; }
-        .p-name { font-weight: 800; font-size: 16px; }
-        .p-store { font-size: 12px; color: #64748b; }
-        .p-amt { font-family: 'JetBrains Mono'; font-size: 20px; color: var(--success); }
-
-        /* PAGO PROFESIONAL */
-        .elite-card { 
-            background: var(--dark); color: #fff; padding: 35px; border-radius: 25px; 
-            text-align: center; border: 2px solid var(--accent); position: relative;
-        }
-        .badge-7days { background: var(--accent); color: var(--dark); padding: 4px 12px; border-radius: 50px; font-size: 11px; font-weight: 900; margin-bottom: 10px; display: inline-block; }
-        .price-tag { font-size: 50px; font-weight: 900; margin: 15px 0; color: #fff; }
-        .price-tag span { font-size: 18px; opacity: 0.6; }
-
-        /* NAVEGACIÓN - Z-INDEX CORREGIDO */
-        nav {
-            position: fixed; bottom: 0; width: 100%; height: 80px; background: #fff;
-            display: flex; justify-content: space-around; align-items: center;
-            border-top: 1px solid #f1f5f9; z-index: 3000; padding-bottom: 15px;
-        }
-        .nav-link { text-decoration: none; color: #94a3b8; font-size: 10px; font-weight: 800; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        nav { position: fixed; bottom: 0; width: 100%; height: 80px; background: #fff; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #edf2f7; z-index: 5000; }
+        .nav-link { text-decoration: none; color: #94a3b8; font-size: 11px; font-weight: 900; display: flex; flex-direction: column; align-items: center; gap: 5px; }
         .nav-link.active { color: var(--brand); }
-        .nav-link svg { width: 24px; height: 24px; stroke-width: 2.5; }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 10px; font-size: 15px; }
+        .btn-main { width: 100%; padding: 16px; border-radius: 12px; border: none; background: var(--brand); color: white; font-weight: 800; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo">Ma<span>Precios</span></div>
-        <div class="profile-zone">
-            <div id="g-login"></div>
-            <div id="u-pill" class="user-pill">
-                <img src="" id="u-img">
-                <span id="u-name"></span>
-            </div>
+        <div class="logo">MaPrecios</div>
+        <div id="auth-area">
+            <div id="g_id_onload" data-client_id="741318611947-h590d5p7s9njemslu7th8g38v09i210a.apps.googleusercontent.com" data-callback="onAuth"></div>
+            <div class="g_id_signin" data-type="standard"></div>
         </div>
     </header>
 
     <main>
         <section id="sc-map" class="screen active">
             <div class="map-wrapper"><div id="map"></div></div>
-            <div id="store-form" class="card animate__animated animate__slideInUp" style="display:none;">
-                <div class="card-title">📍 Nuevo Establecimiento</div>
-                <input type="text" id="st-name" class="input" placeholder="Nombre del negocio...">
-                <button class="btn btn-main" onclick="APP.saveStore()">Registrar en MaPrecios</button>
+            <div id="panel-admin-map" class="admin-zone" style="display:none;">
+                <p class="admin-title">Panel Desarrollador: Negocios Pendientes</p>
+                <div id="admin-stores-list"></div>
+            </div>
+            <div id="reg-store" class="card" style="display:none;">
+                <h3>Registrar Negocio</h3>
+                <p style="font-size:12px; color:gray; margin-bottom:10px;">Requiere 5 confirmaciones para ser público.</p>
+                <input type="text" id="st-name" class="input" placeholder="Nombre del negocio">
+                <button class="btn-main" onclick="MaPrecios.saveStore()">Solicitar Registro</button>
             </div>
         </section>
 
         <section id="sc-radar" class="screen">
-            <input type="text" id="finder" class="input" placeholder="🔍 Buscar producto o local...">
-            <div id="feed"></div>
+            <input type="text" id="search" class="input" placeholder="🔍 Buscar productos confirmados...">
+            <div id="radar-list"></div>
         </section>
 
         <section id="sc-add" class="screen">
-            <div id="lock" class="card" style="text-align:center; padding: 50px 20px;">
-                <h2 style="margin-bottom:15px;">Colaboración Privada</h2>
-                <p style="color:#64748b; font-size:14px;">Inicia sesión para subir precios al sistema.</p>
+            <div class="card">
+                <h3>Subir nuevo precio</h3>
+                <select id="sel-st" class="input"></select>
+                <input type="text" id="in-prod" class="input" placeholder="Producto">
+                <input type="number" id="in-price" class="input" placeholder="Precio $">
+                <button class="btn-main" onclick="MaPrecios.savePrice()">Enviar para validación</button>
             </div>
-            <div id="editor" style="display:none;">
-                <div class="card">
-                    <div class="card-title">📥 Cargar Precio</div>
-                    <select id="sel-st" class="input"></select>
-                    <input type="text" id="in-p" class="input" placeholder="Producto (Ej: Pan 1kg)">
-                    <input type="number" id="in-v" class="input" placeholder="Precio ($)">
-                    <button class="btn btn-main" onclick="APP.savePrice()">Subir al Radar</button>
-                </div>
+            <div id="panel-admin-prices" class="admin-zone" style="display:none; margin-top:20px;">
+                <p class="admin-title">Panel Desarrollador: Moderación de Precios</p>
+                <div id="admin-prices-list"></div>
             </div>
         </section>
 
-        <section id="sc-pay" class="screen">
-            <div class="elite-card">
-                <div class="badge-7days">ANUNCIO DESTACADO</div>
-                <h2>Plan MaPrecios Elite</h2>
-                <div class="price-tag">$5.00 <span>/ 7 días</span></div>
-                <p style="font-size:13px; opacity:0.8; margin-bottom:25px;">Tu negocio aparecerá primero en un radio de 10km.</p>
-                
-                <select id="sel-elite" class="input" style="background:#1e293b; color:#fff; border:none;"></select>
-                <div id="pp-btn"></div>
+        <section id="sc-elite" class="screen">
+            <h2 style="text-align:center; margin-bottom:20px;">Publicidad en MaPrecios</h2>
+            <div class="pay-container">
+                <div class="pay-box">
+                    <h4>Anuncio 7 Días</h4>
+                    <p style="font-size:12px; color:gray; margin:10px 0;">Radio 10km</p>
+                    <style>.pp-9MB6JL9TDSVAL{text-align:center;border:none;border-radius:0.25rem;min-width:11.625rem;padding:0 2rem;height:2.625rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:"Helvetica Neue",Arial,sans-serif;font-size:1rem;line-height:1.25rem;cursor:pointer;}</style>
+                    <form action="https://www.paypal.com/ncp/payment/9MB6JL9TDSVAL" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
+                        <input class="pp-9MB6JL9TDSVAL" type="submit" value="Pagar ahora" />
+                        <img src="https://www.paypalobjects.com/images/Debit_Credit.svg" alt="cards" />
+                    </form>
+                </div>
+                <div class="pay-box">
+                    <h4>Anuncio 1 Mes</h4>
+                    <p style="font-size:12px; color:gray; margin:10px 0;">Máxima prioridad</p>
+                    <style>.pp-GVP5ZED2Q2RLJ{text-align:center;border:none;border-radius:0.25rem;min-width:11.625rem;padding:0 2rem;height:2.625rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:"Helvetica Neue",Arial,sans-serif;font-size:1rem;line-height:1.25rem;cursor:pointer;}</style>
+                    <form action="https://www.paypal.com/ncp/payment/GVP5ZED2Q2RLJ" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
+                        <input class="pp-GVP5ZED2Q2RLJ" type="submit" value="Pagar ahora" />
+                        <img src="https://www.paypalobjects.com/images/Debit_Credit.svg" alt="cards" />
+                    </form>
+                </div>
             </div>
         </section>
     </main>
 
     <nav>
-        <a href="javascript:void(0)" class="nav-link active" onclick="APP.nav('sc-map', this)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 20l-5.447-2.724A2 2 0 013 15.487V6.513a2 2 0 011.553-1.943L9 3m6 17l5.447-2.724A2 2 0 0021 17.487V8.513a2 2 0 00-1.553-1.943L15 3m-6 17V3m6 17V3"/></svg>MAPA</a>
-        <a href="javascript:void(0)" class="nav-link" onclick="APP.nav('sc-radar', this)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>RADAR</a>
-        <a href="javascript:void(0)" class="nav-link" onclick="APP.nav('sc-add', this)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>SUBIR</a>
-        <a href="javascript:void(0)" class="nav-link" onclick="APP.nav('sc-pay', this)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>PRO</a>
+        <a href="#" class="nav-link active" onclick="MaPrecios.nav('sc-map', this)">MAPA</a>
+        <a href="#" class="nav-link" onclick="MaPrecios.nav('sc-radar', this)">RADAR</a>
+        <a href="#" class="nav-link" onclick="MaPrecios.nav('sc-add', this)">SUBIR</a>
+        <a href="#" class="nav-link" onclick="MaPrecios.nav('sc-elite', this)">ELITE</a>
     </nav>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://www.paypal.com/sdk/js?client-id=BAAZ0X-3IhGgySgHkjA0ItlcqSu3fMmrTkQFmhcuPHWALq8CxO_jqGpa-4VTKlN1lQyp6c0eVNvCC7Novk&currency=USD"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, doc, deleteDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const cfg = {
             apiKey: "AIzaSyAzNx7ARReSFqDt052rIficuErmuq10WMc",
@@ -175,36 +142,32 @@
         };
 
         const db = getFirestore(initializeApp(cfg));
+        const ADMIN_EMAIL = "jorge.valencia.abarca@gmail.com";
 
-        window.APP = {
-            user: null,
-            map: null,
-            pos: null,
-            data: { stores: [], prices: [] },
+        window.MaPrecios = {
+            user: null, map: null, pos: null, stores: [], prices: [], markers: [],
 
             init: () => {
-                // Mapa corregido (z-index y comportamiento)
-                APP.map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-33.4474, -70.6736], 14);
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_all/{z}/{x}/{y}{r}.png').addTo(APP.map);
+                MaPrecios.map = L.map('map', { zoomControl: false }).setView([-33.4474, -70.6736], 14);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_all/{z}/{x}/{y}{r}.png').addTo(MaPrecios.map);
                 
-                APP.map.on('click', e => {
-                    if(!APP.user) return alert("Inicia sesión para marcar locales.");
-                    APP.pos = e.latlng;
-                    document.getElementById('store-form').style.display = 'block';
-                    APP.map.panTo(e.latlng);
+                MaPrecios.map.on('click', e => {
+                    if(!MaPrecios.user) return;
+                    MaPrecios.pos = e.latlng;
+                    document.getElementById('reg-store').style.display = 'block';
                 });
 
-                // Listeners Firebase
                 onSnapshot(collection(db, "negocios"), s => {
-                    APP.data.stores = s.docs.map(d => ({id: d.id, ...d.data()}));
-                    APP.sync();
-                });
-                onSnapshot(query(collection(db, "productos"), orderBy("ts", "desc")), s => {
-                    APP.data.prices = s.docs.map(d => ({id: d.id, ...d.data()}));
-                    APP.renderFeed();
+                    MaPrecios.stores = s.docs.map(d => ({id: d.id, ...d.data()}));
+                    MaPrecios.renderMap();
+                    MaPrecios.renderAdmin();
                 });
 
-                APP.loadAuth();
+                onSnapshot(collection(db, "productos"), s => {
+                    MaPrecios.prices = s.docs.map(d => ({id: d.id, ...d.data()}));
+                    MaPrecios.renderRadar();
+                    MaPrecios.renderAdmin();
+                });
             },
 
             nav: (id, el) => {
@@ -212,99 +175,91 @@
                 document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
                 document.getElementById(id).classList.add('active');
                 el.classList.add('active');
-                if(id === 'sc-map') setTimeout(() => APP.map.invalidateSize(), 100);
-            },
-
-            loadAuth: () => {
-                const s = document.createElement('script');
-                s.src = "https://accounts.google.com/gsi/client";
-                s.onload = () => {
-                    google.accounts.id.initialize({
-                        client_id: "741318611947-h590d5p7s9njemslu7th8g38v09i210a.apps.googleusercontent.com",
-                        callback: r => {
-                            const u = JSON.parse(atob(r.credential.split('.')[1]));
-                            APP.user = u;
-                            // Acción inmediata tras login
-                            document.getElementById('g-login').style.display = 'none';
-                            document.getElementById('u-pill').style.display = 'flex';
-                            document.getElementById('u-name').innerText = u.given_name;
-                            document.getElementById('u-img').src = u.picture;
-                            document.getElementById('lock').style.display = 'none';
-                            document.getElementById('editor').style.display = 'block';
-                            APP.sync();
-                            APP.initPay();
-                        }
-                    });
-                    google.accounts.id.renderButton(document.getElementById("g-login"), { theme: "outline", size: "medium", shape: "pill" });
-                };
-                document.head.appendChild(s);
+                if(id === 'sc-map') setTimeout(() => MaPrecios.map.invalidateSize(), 200);
             },
 
             saveStore: async () => {
-                const n = document.getElementById('st-name').value;
-                if(!n || !APP.pos) return;
-                await addDoc(collection(db, "negocios"), { name: n, lat: APP.pos.lat, lng: APP.pos.lng, owner: APP.user.email, elite: false });
-                document.getElementById('st-name').value = "";
-                document.getElementById('store-form').style.display = 'none';
+                const name = document.getElementById('st-name').value;
+                if(!name || !MaPrecios.pos) return;
+                await addDoc(collection(db, "negocios"), { name, lat: MaPrecios.pos.lat, lng: MaPrecios.pos.lng, votes: 1, confirmed: false, owner: MaPrecios.user.email });
+                document.getElementById('reg-store').style.display = 'none';
             },
 
             savePrice: async () => {
                 const sid = document.getElementById('sel-st').value;
-                const p = document.getElementById('in-p').value;
-                const v = document.getElementById('in-v').value;
+                const p = document.getElementById('in-prod').value;
+                const v = document.getElementById('in-price').value;
                 if(!sid || !p || !v) return;
-                const st = APP.data.stores.find(x => x.id === sid);
-                await addDoc(collection(db, "productos"), { sid, storeName: st.name, prod: p, val: parseFloat(v), ts: Date.now(), premium: st.elite || false });
-                document.getElementById('in-p').value = ""; document.getElementById('in-v').value = "";
-                alert("Precio publicado.");
+                await addDoc(collection(db, "productos"), { sid, prod: p, val: parseFloat(v), votes: 1, confirmed: false, user: MaPrecios.user.email });
+                alert("Enviado a validación comunitaria.");
             },
 
-            sync: () => {
-                // Marcadores con radio de 10km visual (ejemplo)
-                APP.data.stores.forEach(s => {
-                    const color = s.elite ? '#f59e0b' : '#0052ff';
-                    L.circleMarker([s.lat, s.lng], { radius: 8, color: '#fff', weight: 2, fillColor: color, fillOpacity: 1 }).addTo(APP.map).bindPopup(s.name);
+            vote: async (type, id) => {
+                const ref = doc(db, type, id);
+                await updateDoc(ref, { votes: increment(1) });
+                // Lógica de auto-confirmación a los 5 votos
+                const item = (type === 'negocios' ? MaPrecios.stores : MaPrecios.prices).find(x => x.id === id);
+                if(item.votes >= 4) await updateDoc(ref, { confirmed: true });
+            },
+
+            deleteItem: async (type, id) => {
+                if(confirm("¿Borrar definitivamente de MaPrecios?")) await deleteDoc(doc(db, type, id));
+            },
+
+            renderMap: () => {
+                MaPrecios.markers.forEach(m => MaPrecios.map.removeLayer(m));
+                MaPrecios.stores.filter(s => s.confirmed).forEach(s => {
+                    const m = L.circleMarker([s.lat, s.lng], { radius: 10, color: '#0052ff', fillOpacity: 1 }).addTo(MaPrecios.map).bindPopup(`<b>${s.name}</b>`);
+                    MaPrecios.markers.push(m);
                 });
-                const opt = APP.data.stores.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+                const opt = MaPrecios.stores.filter(s => s.confirmed).map(s => `<option value="${s.id}">${s.name}</option>`).join('');
                 document.getElementById('sel-st').innerHTML = opt;
-                const my = APP.data.stores.filter(s => s.owner === APP.user?.email);
-                document.getElementById('sel-elite').innerHTML = my.map(s => `<option value="${s.id}">${s.name}</option>`).join('') || '<option disabled>Sin negocios propios</option>';
             },
 
-            renderFeed: () => {
-                const f = document.getElementById('feed');
-                f.innerHTML = APP.data.prices.map(p => `
-                    <div class="price-row ${p.premium ? 'premium' : ''}">
-                        <div>
-                            <div class="p-name">${p.prod} ${p.premium ? '⭐' : ''}</div>
-                            <div class="p-store">📍 ${p.storeName}</div>
+            renderRadar: () => {
+                const list = document.getElementById('radar-list');
+                list.innerHTML = MaPrecios.prices.filter(p => p.confirmed).map(p => `
+                    <div class="card">
+                        <div style="display:flex; justify-content:space-between;">
+                            <div><b>${p.prod}</b></div>
+                            <div class="price-tag">$${p.val}</div>
                         </div>
-                        <div class="p-amt">$${Number(p.val).toLocaleString()}</div>
                     </div>
                 `).join('');
             },
 
-            initPay: () => {
-                paypal.Buttons({
-                    createOrder: (d, a) => a.order.create({ purchase_units: [{ amount: { value: "5.00" }, description: "MaPrecios Anuncio Elite - 7 Días" }] }),
-                    onApprove: async (d, a) => {
-                        const res = await a.order.capture();
-                        const id = document.getElementById('sel-elite').value;
-                        await updateDoc(doc(db, "negocios", id), { elite: true, exp: Date.now() + (7 * 24 * 60 * 60 * 1000) });
-                        alert("Anuncio Activo por 7 días.");
-                        location.reload();
-                    }
-                }).render('#pp-btn');
+            renderAdmin: () => {
+                if(!MaPrecios.user || MaPrecios.user.email !== ADMIN_EMAIL) return;
+                
+                document.getElementById('panel-admin-map').style.display = 'block';
+                document.getElementById('panel-admin-prices').style.display = 'block';
+
+                const sList = document.getElementById('admin-stores-list');
+                sList.innerHTML = MaPrecios.stores.map(s => `
+                    <div style="font-size:12px; border-bottom:1px solid #334155; padding:10px 0;">
+                        ${s.name} (${s.votes} votos) ${s.confirmed ? '✅' : '⏳'}
+                        <br><button class="btn-delete" onclick="MaPrecios.deleteItem('negocios','${s.id}')">ELIMINAR</button>
+                    </div>
+                `).join('');
+
+                const pList = document.getElementById('admin-prices-list');
+                pList.innerHTML = MaPrecios.prices.map(p => `
+                    <div style="font-size:12px; border-bottom:1px solid #334155; padding:10px 0;">
+                        ${p.prod}: $${p.val} (${p.votes} votos)
+                        <br><button class="btn-delete" onclick="MaPrecios.deleteItem('productos','${p.id}')">ELIMINAR</button>
+                    </div>
+                `).join('');
             }
         };
 
-        APP.init();
-
-        // Filtro de búsqueda
-        document.getElementById('finder').oninput = e => {
-            const v = e.target.value.toLowerCase();
-            document.querySelectorAll('.price-row').forEach(r => r.style.display = r.innerText.toLowerCase().includes(v) ? 'flex' : 'none');
+        window.onAuth = (res) => {
+            const u = JSON.parse(atob(res.credential.split('.')[1]));
+            MaPrecios.user = u;
+            document.getElementById('auth-area').innerHTML = `<img src="${u.picture}" style="width:35px; border-radius:50%; border:2px solid #0052ff;">`;
+            MaPrecios.renderAdmin();
         };
+
+        MaPrecios.init();
     </script>
 </body>
 </html>
